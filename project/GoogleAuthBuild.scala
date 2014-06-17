@@ -55,5 +55,6 @@ object GoogleAuthBuild extends Build {
       }
     )
 
-  lazy val root = Project("googleauth", base = file("."))
-    .settings(baseSettings: _*).aggregate(googleauth)
+  lazy val root = Project("googleauth", base = file(".")).settings(baseSettings: _*).aggregate(googleauth)
+
+}
