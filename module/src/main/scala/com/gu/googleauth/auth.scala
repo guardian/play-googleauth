@@ -7,8 +7,8 @@ import play.api.libs.ws.WS
 
 case class GoogleAuthConfig(clientId: String, clientSecret:String, redirectUrl: String, domain: Option[String])
 
-trait GoogleAuth {
-  def RedirectToGoogle(discoveryDocument: DiscoveryDocument, config: GoogleAuthConfig, antiForgeryToken: String): SimpleResult = {
+object GoogleAuth {
+  def redirectToGoogle(discoveryDocument: DiscoveryDocument, config: GoogleAuthConfig, antiForgeryToken: String): SimpleResult = {
     val queryString: Map[String, Seq[String]] = Map(
       "client_id" -> Seq(config.clientId),
       "response_type" -> Seq("code"),
@@ -20,7 +20,7 @@ trait GoogleAuth {
     Redirect(s"${discoveryDocument.authorization_endpoint}", queryString)
   }
 
-  def ValidatedUserIdentity(discoveryDocument:DiscoveryDocument, config:GoogleAuthConfig, expectedAntiForgeryToken:String)
+  def validatedUserIdentity(discoveryDocument:DiscoveryDocument, config:GoogleAuthConfig, expectedAntiForgeryToken:String)
                   (implicit request:RequestHeader, context:ExecutionContext): Future[UserIdentity] = {
     if (!request.queryString.getOrElse("state", Nil).contains(expectedAntiForgeryToken)) {
       throw new IllegalArgumentException("The anti forgery token did not match")

@@ -29,11 +29,11 @@ case class UserInfo(kind: String, gender: Option[String], sub: String, name: Str
                     profile: String, picture: String, email: String, email_verified: String, locale: String, hd: String)
 object UserInfo {
   implicit val userInfoReads = Json.reads[UserInfo]
-  def fromJson(json:JsValue):UserInfo = Json.fromJson[UserInfo](json).get
+  def fromJson(json:JsValue):UserInfo = json.as[UserInfo]
 }
 
 case class JsonWebToken(jwt: String) {
   val jwtParts: Array[String] = jwt.split('.')
   val Array(headerJson, claimsJson) = jwtParts.take(2).map(Base64.decodeBase64).map(Json.parse)
-  val claims = Json.fromJson[JwtClaims](claimsJson).get
+  val claims = claimsJson.as[JwtClaims]
 }

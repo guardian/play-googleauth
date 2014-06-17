@@ -32,20 +32,20 @@ object AuthenticatedRequest {
   }
 }
 
-trait AuthActions {
-  val LOGIN_FROM_URL_COOKIE = "loginFromUrl"
-  def loginAction: Call
+trait Actions {
+  val LOGIN_ORIGIN_KEY = "loginOriginUrl"
+  def loginTarget: Call
 
   def sendForAuth[A](request:Request[A]) =
-    Future.successful(Redirect(loginAction).withSession {
-      request.session + (LOGIN_FROM_URL_COOKIE, request.uri)
+    Future.successful(Redirect(loginTarget).withSession {
+      request.session + (LOGIN_ORIGIN_KEY, request.uri)
     })
 
   object NonAuthAction extends ActionBuilder[AuthenticatedRequest] {
     override protected def invokeBlock[A](request: Request[A],
                                           block: (AuthenticatedRequest[A]) => Future[SimpleResult]): Future[SimpleResult] = {
       UserIdentity.fromRequest(request) match {
-        case Some(identity) if !identity.isValid => sendForAuth(request)
+        //case Some(identity) if !identity.isValid => sendForAuth(request)
         case otherIdentity => block(new AuthenticatedRequest(otherIdentity, request))
       }
     }
