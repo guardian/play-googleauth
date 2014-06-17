@@ -37,3 +37,12 @@ case class JsonWebToken(jwt: String) {
   val Array(headerJson, claimsJson) = jwtParts.take(2).map(Base64.decodeBase64).map(Json.parse)
   val claims = claimsJson.as[JwtClaims]
 }
+
+case class ErrorInfo(domain: String, reason: String, message: String)
+object ErrorInfo {
+  implicit val errorInfoReads = Json.reads[ErrorInfo]
+}
+case class Error(errors: Seq[ErrorInfo], code: Int, message: String)
+object Error {
+  implicit val errorReads = Json.reads[Error]
+}

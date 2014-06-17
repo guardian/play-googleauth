@@ -3,11 +3,28 @@ package com.gu.googleauth
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{SimpleResult, RequestHeader}
 import scala.concurrent.{ExecutionContext, Future}
-import play.api.libs.ws.WS
+import play.api.libs.ws.{Response, WS}
+import play.api.libs.json.JsValue
 
 case class GoogleAuthConfig(clientId: String, clientSecret:String, redirectUrl: String, domain: Option[String])
 
+class GoogleAuthException(val message: String, val throwable: Throwable = null) extends Exception(message, throwable)
+
 object GoogleAuth {
+  def googleResponse[T](r:Response)(block:JsValue => T): T = {
+    r.status match {
+      case errorCode if errorCode >= 400 =>
+        // try to get error if google sent us an error doc
+        val error = (r.json \ "error").asOpt[Error]
+        error.map { e =>
+          throw new GoogleAuthException(s"Error when calling Google: ${e.message}")
+        }.getOrElse {
+          throw new GoogleAuthException(s"Unknown error when calling Google [status=$errorCode, body=${r.body}]")
+        }
+      case normal => block(r.json)
+    }
+  }
+
   def redirectToGoogle(discoveryDocument: DiscoveryDocument, config: GoogleAuthConfig, antiForgeryToken: String): SimpleResult = {
     val queryString: Map[String, Seq[String]] = Map(
       "client_id" -> Seq(config.clientId),
@@ -34,21 +51,26 @@ object GoogleAuth {
           "redirect_uri" -> Seq(config.redirectUrl),
           "grant_type" -> Seq("authorization_code")
         )
-      }.flatMap {
-        response =>
-          val token = Token.fromJson(response.json)
+      }.flatMap { response =>
+        googleResponse(response) { json =>
+          val token = Token.fromJson(json)
           val jwt = token.jwt
-          WS.url(discoveryDocument.userinfo_endpoint).withHeaders("Authorization" -> s"Bearer ${token.access_token}").get().map {
+          WS.url(discoveryDocument.userinfo_endpoint)
+            .withHeaders("Authorization" -> s"Bearer ${token.access_token}")
+            .get().map {
             response =>
-              val userInfo = UserInfo.fromJson(response.json)
-              UserIdentity(
-                jwt.claims.sub,
-                jwt.claims.email,
-                userInfo.given_name,
-                userInfo.family_name,
-                jwt.claims.exp
-              )
+              googleResponse(response) { json =>
+                val userInfo = UserInfo.fromJson(json)
+                UserIdentity(
+                  jwt.claims.sub,
+                  jwt.claims.email,
+                  userInfo.given_name,
+                  userInfo.family_name,
+                  jwt.claims.exp
+                )
+              }
           }
+        }
       }
     }
   }
