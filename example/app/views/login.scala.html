@@ -1,0 +1,14 @@
+@(error: Option[String] = None)
+
+<html>
+    <head><title>Login</title></head>
+    <body>
+        <h1>Login Page</h1>
+        <p>Click the button below to login.</p>
+        <p>This page is used to redirect failed login attempts and display any errors.</p>
+        <p>The error this time was: @error</p>
+        <form action="@routes.Login.loginAction()" method="get">
+            <input value="Log In" type="submit">
+        </form>
+    </body>
+</html>
