@@ -9,14 +9,17 @@ name               := "play-googleauth"
 
 organization       := "com.gu"
 
-scalaVersion       := "2.10.4"
+scalaVersion       := "2.11.0"
+
+resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play" % "2.2.0" % "provided",
+  "com.typesafe.play" %% "play" % "2.3.0" % "provided",
+  "com.typesafe.play" %% "play-ws" % "2.3.0" % "provided",
   "commons-codec" % "commons-codec" % "1.9"
 )
 
-scalacOptions ++= Seq("-feature")
+scalacOptions ++= Seq("-feature", "-deprecation")
 
 description        := "Simple Google authentication module for Play 2"
 

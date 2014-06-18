@@ -1,9 +1,12 @@
-import play.Project._
-
 name := "play-googleauth-example"
 
-version := "0.0.2"
+version := "0.1.1"
 
-playScalaSettings
+scalaVersion := "2.11.0"
 
-libraryDependencies += "com.gu" %% "play-googleauth" % version.value
+libraryDependencies ++= Seq(
+  "com.gu" %% "play-googleauth" % version.value,
+  ws
+)
+
+lazy val root = (project in file(".")).enablePlugins(PlayScala)

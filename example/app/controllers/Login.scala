@@ -5,6 +5,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.Json
 import scala.concurrent.Future
 import com.gu.googleauth._
+import play.api.Play.current
 
 trait AuthActions extends Actions {
   val loginTarget: Call = routes.Login.loginAction()
@@ -33,7 +34,7 @@ object Login extends Controller with AuthActions {
   def loginAction = Action.async { implicit request =>
     val antiForgeryToken = GoogleAuth.generateAntiForgeryToken()
     GoogleAuth.redirectToGoogle(googleAuthConfig, antiForgeryToken).map {
-      _.withSession { session + (ANTI_FORGERY_KEY -> antiForgeryToken) }
+      _.withSession { request.session + (ANTI_FORGERY_KEY -> antiForgeryToken) }
     }
   }
 
@@ -45,6 +46,7 @@ object Login extends Controller with AuthActions {
 
    */
   def oauth2Callback = Action.async { implicit request =>
+    val session = request.session
     session.get(ANTI_FORGERY_KEY) match {
       case None =>
         Future.successful(Redirect(routes.Login.login()).flashing("error" -> "Anti forgery token missing in session"))

@@ -59,8 +59,8 @@ trait Actions {
    * instead appears as if the user is logged out.
    */
   object LoginAuthAction extends ActionBuilder[AuthenticatedRequest] {
-    override protected def invokeBlock[A](request: Request[A],
-                                          block: (AuthenticatedRequest[A]) => Future[SimpleResult]): Future[SimpleResult] = {
+    override def invokeBlock[A](request: Request[A],
+                                          block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
       UserIdentity.fromRequest(request) match {
         case Some(identity) if !identity.isValid => block(new AuthenticatedRequest(None, request))
         case otherIdentity => block(new AuthenticatedRequest(otherIdentity, request))
@@ -75,8 +75,8 @@ trait Actions {
    * If the user is valid (and expired sessions are re-authenticated) then the AuthenticatedRequest will have an identity.
    */
   object NonAuthAction extends ActionBuilder[AuthenticatedRequest] {
-    override protected def invokeBlock[A](request: Request[A],
-                                          block: (AuthenticatedRequest[A]) => Future[SimpleResult]): Future[SimpleResult] = {
+    override def invokeBlock[A](request: Request[A],
+                                          block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
       UserIdentity.fromRequest(request) match {
         case Some(identity) if !identity.isValid => sendForAuth(request)
         case otherIdentity => block(new AuthenticatedRequest(otherIdentity, request))
@@ -91,8 +91,8 @@ trait Actions {
    * The AuthenticatedRequest will always have an identity.
    */
   object AuthAction extends ActionBuilder[AuthenticatedRequest] {
-    override protected def invokeBlock[A](request: Request[A],
-                                          block: (AuthenticatedRequest[A]) => Future[SimpleResult]): Future[SimpleResult] = {
+    override def invokeBlock[A](request: Request[A],
+                                          block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
       UserIdentity.fromRequest(request) match {
         case Some(identity) if identity.isValid => block(new AuthenticatedRequest(Some(identity), request))
         case _ => sendForAuth(request)

@@ -1,13 +1,14 @@
 package com.gu.googleauth
 
 import play.api.mvc.Results.Redirect
-import play.api.mvc.{SimpleResult, RequestHeader}
+import play.api.mvc.{Result, RequestHeader}
 import scala.concurrent.{ExecutionContext, Future}
-import play.api.libs.ws.{Response, WS}
+import play.api.libs.ws.{WSResponse, WS}
 import play.api.libs.json.JsValue
 import scala.language.postfixOps
 import java.math.BigInteger
 import java.security.SecureRandom
+import play.api.Application
 
 case class GoogleAuthConfig(clientId: String, clientSecret: String, redirectUrl: String, domain: Option[String])
 
@@ -16,7 +17,7 @@ class GoogleAuthException(val message: String, val throwable: Throwable = null) 
 object GoogleAuth {
   var discoveryDocumentHolder: Option[Future[DiscoveryDocument]] = None
 
-  def discoveryDocument(implicit context: ExecutionContext): Future[DiscoveryDocument] =
+  def discoveryDocument(implicit context: ExecutionContext, application: Application): Future[DiscoveryDocument] =
     if (discoveryDocumentHolder.isDefined) discoveryDocumentHolder.get
     else {
       val discoveryDocumentFuture = WS.url(DiscoveryDocument.url).get().map(r => DiscoveryDocument.fromJson(r.json))
@@ -27,7 +28,7 @@ object GoogleAuth {
   val random = new SecureRandom()
   def generateAntiForgeryToken() = new BigInteger(130, random).toString(32)
 
-  def googleResponse[T](r: Response)(block: JsValue => T): T = {
+  def googleResponse[T](r: WSResponse)(block: JsValue => T): T = {
     r.status match {
       case errorCode if errorCode >= 400 =>
         // try to get error if google sent us an error doc
@@ -42,7 +43,7 @@ object GoogleAuth {
   }
 
   def redirectToGoogle(config: GoogleAuthConfig, antiForgeryToken: String)
-                      (implicit context: ExecutionContext): Future[SimpleResult] = {
+                      (implicit context: ExecutionContext, application: Application): Future[Result] = {
     val queryString: Map[String, Seq[String]] = Map(
       "client_id" -> Seq(config.clientId),
       "response_type" -> Seq("code"),
@@ -55,7 +56,7 @@ object GoogleAuth {
   }
 
   def validatedUserIdentity(config: GoogleAuthConfig, expectedAntiForgeryToken: String)
-                           (implicit request: RequestHeader, context: ExecutionContext): Future[UserIdentity] = {
+        (implicit request: RequestHeader, context: ExecutionContext, application: Application): Future[UserIdentity] = {
     if (!request.queryString.getOrElse("state", Nil).contains(expectedAntiForgeryToken)) {
       throw new IllegalArgumentException("The anti forgery token did not match")
     } else {
