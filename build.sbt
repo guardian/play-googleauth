@@ -16,6 +16,8 @@ libraryDependencies ++= Seq(
   "commons-codec" % "commons-codec" % "1.9"
 )
 
+scalacOptions ++= Seq("-feature")
+
 description        := "Simple Google authentication module for Play 2"
 
 licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"))

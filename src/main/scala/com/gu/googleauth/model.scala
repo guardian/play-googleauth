@@ -5,6 +5,7 @@ import org.apache.commons.codec.binary.Base64
 
 case class DiscoveryDocument(authorization_endpoint: String, token_endpoint: String, userinfo_endpoint: String)
 object DiscoveryDocument {
+  val url = "https://accounts.google.com/.well-known/openid-configuration"
   implicit val discoveryDocumentReads = Json.reads[DiscoveryDocument]
   def fromJson(json: JsValue) = Json.fromJson[DiscoveryDocument](json).getOrElse(
     throw new IllegalArgumentException("Invalid discovery document")
