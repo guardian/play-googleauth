@@ -2,18 +2,19 @@ package com.gu.googleauth
 
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{SimpleResult, RequestHeader}
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 import play.api.libs.ws.{Response, WS}
 import play.api.libs.json.JsValue
 import scala.language.postfixOps
+import java.math.BigInteger
+import java.security.SecureRandom
 
 case class GoogleAuthConfig(clientId: String, clientSecret: String, redirectUrl: String, domain: Option[String])
 
 class GoogleAuthException(val message: String, val throwable: Throwable = null) extends Exception(message, throwable)
 
 object GoogleAuth {
-  var discoveryDocumentHolder: Option[Future[DiscoveryDocument]] = _
+  var discoveryDocumentHolder: Option[Future[DiscoveryDocument]] = None
 
   def discoveryDocument(implicit context: ExecutionContext): Future[DiscoveryDocument] =
     if (discoveryDocumentHolder.isDefined) discoveryDocumentHolder.get
@@ -22,6 +23,9 @@ object GoogleAuth {
       discoveryDocumentHolder = Some(discoveryDocumentFuture)
       discoveryDocumentFuture
     }
+
+  val random = new SecureRandom()
+  def generateAntiForgeryToken() = new BigInteger(130, random).toString(32)
 
   def googleResponse[T](r: Response)(block: JsValue => T): T = {
     r.status match {
