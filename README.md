@@ -10,7 +10,9 @@ at the same time that it has been migrated over from OpenID to OpenID Connect.
 Versions
 --------
 
-For Play 2.2.x use version `0.0.2` (master).
+For Play 2.3.x use version `0.1.1` (master)
+
+For Play 2.2.x use version `0.0.2` (`play2.2.x` branch)
 
 Adding to your application
 --------------------------
@@ -28,7 +30,7 @@ In order to add Google authentication to your Play app you must:
  - use `AuthAction` or `NonAuthAction` instead of `Action` to wrap actions in your controllers (these should be made
  available by extending the trait you implemented earlier
 
-See the sample application to see how this is done.
+See the [example](https://github.com/guardian/play-googleauth/tree/master/example) application to see how this is done.
 
 Caveats
 -------
@@ -36,6 +38,6 @@ Caveats
 This module brings in Apache Commons 1.9 which is later than the version Play requires by default. This is
 usually fine as it is compatible.
 
-The token acquired from Google is not cryptographically verified. This is not a problem as it is obtained directly
+The token acquired from Google is **NOT** cryptographically verified. This is not a problem as it is obtained directly
 from Google over an SSL connection, used to authenticate the user and then thrown away. Do not keep the token around
 and use it elsewhere unless this code is modified to carry out the verification.
