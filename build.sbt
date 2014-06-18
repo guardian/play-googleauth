@@ -13,8 +13,6 @@ version            := "0.0.1-SNAPSHOT"
 
 scalaVersion       := "2.10.4"
 
-crossScalaVersions := Seq("2.11.0", "2.10.4")
-
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play" % "2.2.0" % "provided",
   "commons-codec" % "commons-codec" % "1.9"
@@ -39,8 +37,6 @@ pomExtra := {
     </developer>
   </developers>
 }
-
-ReleaseKeys.crossBuild := true
 
 ReleaseKeys.releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
