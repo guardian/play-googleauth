@@ -12,12 +12,12 @@ Versions
 
 For Play 2.3.x use the master branch (note this is only released for Scala 0.11.0:
 ```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.1.1"
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.1.2"
 ```
 
 For Play 2.2.x use the `play2.2.x` branch:
 ```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.0.2"
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.0.3"
 ```
 
 Adding to your application
