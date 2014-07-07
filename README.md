@@ -41,6 +41,10 @@ See the [example](https://github.com/guardian/play-googleauth/tree/master/exampl
 Caveats
 -------
 
+If your login expires and the next request you make is a GET method then your login will be transparently revalidated,
+but if your next request is a POST method then it is not possible to sensibly redirect the request and you will end
+up being redirected to the correct URL but with a GET request.
+
 This module brings in Apache Commons 1.9 which is later than the version Play requires by default. This is
 usually fine as it is compatible.
 
