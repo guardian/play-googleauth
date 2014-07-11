@@ -53,20 +53,33 @@ trait Actions {
     })
 
   /**
+   * An action builder which either:
+   * a) forces the user to authenticate
+   * b) executes the request block, passing in an AuthenticatedRequest with
+   *    either a _valid_ user-identity or no user-identity at all
+   *
+   * @param forceAuth a predicate indicating whether a request's (optional, possibly expired) identity should cause
+   *                  authentication to be forced.
+   */
+  class AuthActionBuilder(forceAuth: Option[UserIdentity] => Boolean) extends ActionBuilder[AuthenticatedRequest] {
+
+    override def invokeBlock[A](request: Request[A],
+                                block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
+      val identityOpt = UserIdentity.fromRequest(request)
+
+      if (forceAuth(identityOpt)) sendForAuth(request) else {
+        block(new AuthenticatedRequest(identityOpt.filter(_.isValid), request))
+      }
+    }
+  }
+
+  /**
    * This action should be used for any login screen.
    *
    * It is similar to NonAuthAction, but does not send users for re-authentication if their session has expired and
    * instead appears as if the user is logged out.
    */
-  object LoginAuthAction extends ActionBuilder[AuthenticatedRequest] {
-    override def invokeBlock[A](request: Request[A],
-                                          block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
-      UserIdentity.fromRequest(request) match {
-        case Some(identity) if !identity.isValid => block(new AuthenticatedRequest(None, request))
-        case otherIdentity => block(new AuthenticatedRequest(otherIdentity, request))
-      }
-    }
-  }
+  object LoginAuthAction extends AuthActionBuilder(_ => false)
 
   /**
    * This action can be used for pages where login is optional.
@@ -74,15 +87,7 @@ trait Actions {
    * If a user has an expired session then they will be sent for re-authentication.
    * If the user is valid (and expired sessions are re-authenticated) then the AuthenticatedRequest will have an identity.
    */
-  object NonAuthAction extends ActionBuilder[AuthenticatedRequest] {
-    override def invokeBlock[A](request: Request[A],
-                                          block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
-      UserIdentity.fromRequest(request) match {
-        case Some(identity) if !identity.isValid => sendForAuth(request)
-        case otherIdentity => block(new AuthenticatedRequest(otherIdentity, request))
-      }
-    }
-  }
+  object NonAuthAction extends AuthActionBuilder(_.exists(!_.isValid))
 
   /**
    * This action ensures that the user is authenticated and their token is valid. Is a user is not logged in or their
@@ -90,13 +95,5 @@ trait Actions {
    *
    * The AuthenticatedRequest will always have an identity.
    */
-  object AuthAction extends ActionBuilder[AuthenticatedRequest] {
-    override def invokeBlock[A](request: Request[A],
-                                          block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
-      UserIdentity.fromRequest(request) match {
-        case Some(identity) if identity.isValid => block(new AuthenticatedRequest(Some(identity), request))
-        case _ => sendForAuth(request)
-      }
-    }
-  }
+  object AuthAction extends AuthActionBuilder(!_.exists(_.isValid))
 }
