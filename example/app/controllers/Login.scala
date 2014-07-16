@@ -18,7 +18,8 @@ object Login extends Controller with AuthActions {
       "5uLmlI8afy5vufKFWXWS2GPw",                  // The client secret from the dev console
       "http://localhost:9000/oauth2callback",      // The redirect URL Google send users back to (must be the same as
                                                    //    that configured in the developer console)
-      Some("guardian.co.uk")                       // Google App domain to restrict login
+      Some("guardian.co.uk"),                      // Google App domain to restrict login
+      None
     )
 
   // this is the only place we use LoginAuthAction - to prevent authentication redirect loops
