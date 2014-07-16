@@ -11,6 +11,9 @@ organization       := "com.gu"
 
 scalaVersion       := "2.10.4"
 
+resolvers += "Typesafe repository" at
+  "http://repo.typesafe.com/typesafe/releases/"
+
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play" % "2.2.0" % "provided",
   "commons-codec" % "commons-codec" % "1.9"
