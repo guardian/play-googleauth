@@ -22,7 +22,7 @@ object UserIdentity {
   def fromRequest(request: Request[Any]): Option[UserIdentity] = fromRequestHeader(request)
 }
 
-class AuthenticatedRequest[A](val identity: Option[UserIdentity], request: Request[A]) extends WrappedRequest[A](request) {
+class AuthenticatedRequest[A](identity: Option[UserIdentity], request: Request[A]) extends WrappedRequest[A](request) {
   lazy val isAuthenticated = identity.isDefined
 }
 
