@@ -13,6 +13,8 @@ scalaVersion       := "2.11.1"
 
 crossScalaVersions := Seq("2.10.4", "2.11.1")
 
+crossScalaVersions := Seq("2.10.0", "2.11.0")
+
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
