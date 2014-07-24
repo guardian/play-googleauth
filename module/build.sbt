@@ -54,7 +54,8 @@ ReleaseKeys.releaseProcess := Seq[ReleaseStep](
   commitReleaseVersion,
   tagRelease,
   ReleaseStep(
-    action = state => Project.extract(state).runTask(PgpKeys.publishSigned, state)._1
+    action = state => Project.extract(state).runTask(PgpKeys.publishSigned, state)._1,
+    enableCrossBuild = true
   ),
   setNextVersion,
   commitNextVersion,
