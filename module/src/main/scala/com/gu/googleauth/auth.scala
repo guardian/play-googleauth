@@ -8,6 +8,7 @@ import play.api.libs.json.JsValue
 import scala.language.postfixOps
 import java.math.BigInteger
 import java.security.SecureRandom
+import play.Application
 
 case class GoogleAuthConfig(clientId: String, clientSecret: String, redirectUrl: String, domain: Option[String])
 
@@ -55,7 +56,11 @@ object GoogleAuth {
   }
 
   def validatedUserIdentity(config: GoogleAuthConfig, expectedAntiForgeryToken: String)
-                           (implicit request: RequestHeader, context: ExecutionContext): Future[UserIdentity] = {
+                           (implicit request: RequestHeader, context: ExecutionContext, application: Application): Future[UserIdentity] =
+    executeGoogleAuth(config, expectedAntiForgeryToken).map(_.userIdentity)
+
+  def executeGoogleAuth(config: GoogleAuthConfig, expectedAntiForgeryToken: String)
+        (implicit request: RequestHeader, context: ExecutionContext, application: Application): Future[GoogleAuthResult] = {
     if (!request.queryString.getOrElse("state", Nil).contains(expectedAntiForgeryToken)) {
       throw new IllegalArgumentException("The anti forgery token did not match")
     } else {
@@ -78,12 +83,15 @@ object GoogleAuth {
                 .get().map { response =>
                   googleResponse(response) { json =>
                       val userInfo = UserInfo.fromJson(json)
-                      UserIdentity(
+                      val userIdentity = UserIdentity(
                         jwt.claims.sub,
                         jwt.claims.email,
                         userInfo.given_name,
                         userInfo.family_name,
-                        jwt.claims.exp
+                        jwt.claims.exp)
+                      GoogleAuthResult(
+                        userIdentity,
+                        userInfo
                       )
                   }
               }
