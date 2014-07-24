@@ -10,9 +10,9 @@ at the same time that it has been migrated over from OpenID to OpenID Connect.
 Versions
 --------
 
-For Play 2.3.x use the master branch (note this is only released for Scala 0.11.0:
+For Play 2.3.x use the master branch:
 ```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.1.2"
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.1.4"
 ```
 
 For Play 2.2.x use the `play2.2.x` branch:

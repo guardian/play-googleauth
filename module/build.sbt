@@ -9,7 +9,9 @@ name               := "play-googleauth"
 
 organization       := "com.gu"
 
-scalaVersion       := "2.11.0"
+scalaVersion       := "2.11.1"
+
+crossScalaVersions := Seq("2.10.4", "2.11.1")
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
@@ -41,6 +43,8 @@ pomExtra := {
   </developers>
 }
 
+ReleaseKeys.crossBuild := true
+
 ReleaseKeys.releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
   inquireVersions,
@@ -50,7 +54,8 @@ ReleaseKeys.releaseProcess := Seq[ReleaseStep](
   commitReleaseVersion,
   tagRelease,
   ReleaseStep(
-    action = state => Project.extract(state).runTask(PgpKeys.publishSigned, state)._1
+    action = state => Project.extract(state).runTask(PgpKeys.publishSigned, state)._1,
+    enableCrossBuild = true
   ),
   setNextVersion,
   commitNextVersion,
