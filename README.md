@@ -12,7 +12,7 @@ Versions
 
 For Play 2.3.x use the master branch:
 ```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.1.2"
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.1.4"
 ```
 
 For Play 2.2.x use the `play2.2.x` branch:
