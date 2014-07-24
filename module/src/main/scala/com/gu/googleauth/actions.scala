@@ -4,6 +4,7 @@ import play.api.libs.json.{JsValue, Format, Json}
 import play.api.mvc.Results._
 import play.api.mvc._
 import scala.concurrent.Future
+import Function.const
 
 case class UserIdentity(sub: String, email: String, firstName: String, lastName: String, exp: Long) {
   lazy val fullName = firstName + " " + lastName
@@ -52,48 +53,56 @@ trait Actions {
       request.session + (LOGIN_ORIGIN_KEY, request.uri)
     })
 
-  /**
-   * An action builder which either:
-   * a) forces the user to authenticate
-   * b) executes the request block, passing in an AuthenticatedRequest with
-   *    either a _valid_ user-identity or no user-identity at all
-   *
-   * @param forceAuth a predicate indicating whether a request's (optional, possibly expired) identity should cause
-   *                  authentication to be forced.
-   */
-  class AuthActionBuilder(forceAuth: Option[UserIdentity] => Boolean) extends ActionBuilder[AuthenticatedRequest] {
 
-    override def invokeBlock[A](request: Request[A],
-                                block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
-      val identityOpt = UserIdentity.fromRequest(request)
+  object AuthActionBuilder {
 
-      if (forceAuth(identityOpt)) sendForAuth(request) else {
-        block(new AuthenticatedRequest(identityOpt.filter(_.isValid), request))
+    /**
+     * Create an action builder which either:
+     * a) forces the user to authenticate
+     * b) executes the request block, passing in an AuthenticatedRequest with
+     *    either a _valid_ user-identity or no user-identity at all
+     *
+     * @param forceAuth a predicate indicating whether a request's (optional, possibly expired) identity should cause
+     *                  authentication to be forced.
+     */
+    def forceAuthIf(forceAuth: Option[UserIdentity] => Boolean) = new ActionBuilder[AuthenticatedRequest] {
+      override def invokeBlock[A](request: Request[A],
+                                  block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
+        val identityOpt = UserIdentity.fromRequest(request)
+
+        if (forceAuth(identityOpt)) sendForAuth(request)
+        else {
+          block(new AuthenticatedRequest(identityOpt.filter(_.isValid), request))
+        }
       }
     }
+
   }
 
   /**
    * This action should be used for any login screen.
    *
-   * It is similar to NonAuthAction, but does not send users for re-authentication if their session has expired and
-   * instead appears as if the user is logged out.
+   * It is similar to NonAuthAction, but NEVER forces the user to authenticate
+   * (ie it does not send users for re-authentication if their session has expired-
+   * instead appears as if the user is logged out).
    */
-  object LoginAuthAction extends AuthActionBuilder(_ => false)
+  val LoginAuthAction = AuthActionBuilder.forceAuthIf(const(false))
 
   /**
    * This action can be used for pages where login is optional.
-   * If no user is logged in then the AuthenticatedRequest will have no identity.
-   * If a user has an expired session then they will be sent for re-authentication.
-   * If the user is valid (and expired sessions are re-authenticated) then the AuthenticatedRequest will have an identity.
+   *
+   * The user is forced to authenticate only if they have invalid (ie expired) identity credentials.
+   * Otherwise they can access the resource, and the AuthenticatedRequest will have their (valid) identity iff
+   * they're logged in.
    */
-  object NonAuthAction extends AuthActionBuilder(_.exists(!_.isValid))
+  val NonAuthAction = AuthActionBuilder.forceAuthIf(id => id.exists(!_.isValid))
 
   /**
-   * This action ensures that the user is authenticated and their token is valid. Is a user is not logged in or their
-   * token has expired then they will be authenticated.
+   * This action ensures that the user is authenticated and their token is valid.
    *
-   * The AuthenticatedRequest will always have an identity.
+   * The user will be forced to authenticate if they do not have valid identity credentials.
+   *
+   * The AuthenticatedRequest will always have a valid identity.
    */
-  object AuthAction extends AuthActionBuilder(!_.exists(_.isValid))
+  val AuthAction = AuthActionBuilder.forceAuthIf(id => !id.exists(_.isValid))
 }
