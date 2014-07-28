@@ -5,9 +5,7 @@ import play.api.mvc.Results._
 import play.api.mvc._
 import scala.concurrent.Future
 
-case class GoogleAuthResult(userIdentity: UserIdentity, userInfo: UserInfo)
-
-case class UserIdentity(sub: String, email: String, firstName: String, lastName: String, exp: Long) {
+case class UserIdentity(sub: String, email: String, firstName: String, lastName: String, exp: Long, avatarUrl: Option[String]) {
   lazy val fullName = firstName + " " + lastName
   lazy val emailDomain = email.split("@").last
   lazy val asJson = Json.stringify(Json.toJson(this))
