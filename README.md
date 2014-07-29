@@ -7,17 +7,21 @@ for Play 2 applications.
 This has been extracted from the OpenID authentication support in Riff-Raff
 at the same time that it has been migrated over from OpenID to OpenID Connect.
 
+:boom: Note that `0.1.5` and `0.0.5` (for play 2.3/2.2 respectively) have a breaking change. `NonAuthAction` has
+been removed and the `com.gu.googleauth.AuthenticatedRequest` has been replaced with the built in
+`play.api.mvc.Security.AuthenticatedRequest`. The `UserIdentity` object is no longer provided as an option.
+
 Versions
 --------
 
 For Play 2.3.x use the master branch:
 ```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.1.4"
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.1.5"
 ```
 
 For Play 2.2.x use the `play2.2.x` branch:
 ```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.0.3"
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.0.5"
 ```
 
 Adding to your application
@@ -33,7 +37,7 @@ In order to add Google authentication to your Play app you must:
  - implement a login controller that has actions and routes for the login screen, login action, oauth callback and
  logout
  - implement a small trait that extends com.gu.googleauth.Actions and sets `loginTarget` to be the login action call
- - use `AuthAction` or `NonAuthAction` instead of `Action` to wrap actions in your controllers (these should be made
+ - use `AuthAction` instead of `Action` to wrap actions in your controllers (these should be made
  available by extending the trait you implemented earlier
 
 See the [example](https://github.com/guardian/play-googleauth/tree/master/example) application to see how this is done.

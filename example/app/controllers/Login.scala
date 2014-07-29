@@ -22,8 +22,7 @@ object Login extends Controller with AuthActions {
       Some("guardian.co.uk")                       // Google App domain to restrict login
     )
 
-  // this is the only place we use LoginAuthAction - to prevent authentication redirect loops
-  def login = LoginAuthAction { request =>
+  def login = Action { request =>
     val error = request.flash.get("error")
     Ok(views.html.login(error))
   }
