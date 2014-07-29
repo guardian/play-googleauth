@@ -84,7 +84,8 @@ object GoogleAuth {
                         jwt.claims.email,
                         userInfo.given_name,
                         userInfo.family_name,
-                        jwt.claims.exp
+                        jwt.claims.exp,
+                        userInfo.picture
                       )
                   }
               }
