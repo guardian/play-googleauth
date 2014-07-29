@@ -2,7 +2,9 @@ import play.Project._
 
 name := "play-googleauth-example"
 
-version := "0.0.2"
+scalaVersion := "2.10.4"
+
+version := "0.0.5"
 
 playScalaSettings
 
