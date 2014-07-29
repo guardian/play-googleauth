@@ -1,12 +1,10 @@
-@(request: com.gu.googleauth.AuthenticatedRequest[AnyContent], error: Option[String] = None)
+@(request: Request[AnyContent], error: Option[String] = None)
 
 <html>
     <head><title>Home</title></head>
     <body>
         <h1>Home page</h1>
         <p>This is the home page of the example application.</p>
-        <p>It uses an NonAuthAction so doesn't require authentication, but you can still see if a user is logged in.</p>
-        <p>In this case the logged in user is @request.identity</p>
         <p>You can go to the <a href="@routes.Login.login()">login page</a>,
             a <a href="@routes.Application.authenticated()">page that requires authentication</a>
             or <a href="@routes.Login.logout()">logout</a>.</p>

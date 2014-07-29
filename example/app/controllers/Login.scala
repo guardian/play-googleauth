@@ -22,7 +22,7 @@ object Login extends Controller with AuthActions {
     )
 
   // this is the only place we use LoginAuthAction - to prevent authentication redirect loops
-  def login = LoginAuthAction { request =>
+  def login = Action { request =>
     val error = request.flash.get("error")
     Ok(views.html.login(error))
   }

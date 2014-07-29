@@ -1,4 +1,4 @@
-@(request: com.gu.googleauth.AuthenticatedRequest[AnyContent], error: Option[String] = None)
+@(request: play.api.mvc.Security.AuthenticatedRequest[AnyContent, com.gu.googleauth.UserIdentity], error: Option[String] = None)
 
 <html>
     <head><title>Authorised</title></head>
@@ -6,7 +6,7 @@
         <h1>Authorised</h1>
         <p>This is an authorised page of the example application.</p>
         <p>It uses an AuthAction so will always have a user.</p>
-        <p>In this case the logged in user is @request.identity.get</p>
+        <p>In this case the logged in user is @request.user</p>
         <p>You can go to the <a href="@routes.Login.login()">login page</a>,
             a <a href="@routes.Application.authenticated()">page that requires authentication</a>
             or <a href="@routes.Login.logout()">logout</a>.</p>
