@@ -21,7 +21,7 @@ libraryDependencies += "com.gu" %% "play-googleauth" % "0.1.5"
 
 For Play 2.2.x use the `play2.2.x` branch:
 ```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.0.5"
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.0.6"
 ```
 
 Adding to your application
