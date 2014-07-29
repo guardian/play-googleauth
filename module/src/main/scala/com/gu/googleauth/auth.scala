@@ -8,8 +8,14 @@ import play.api.libs.json.JsValue
 import scala.language.postfixOps
 import java.math.BigInteger
 import java.security.SecureRandom
+import org.joda.time.Duration
 
-case class GoogleAuthConfig(clientId: String, clientSecret: String, redirectUrl: String, domain: Option[String])
+case class GoogleAuthConfig(
+  clientId: String,
+  clientSecret: String,
+  redirectUrl: String,
+  domain: Option[String],
+  maxAuthAge: Option[Duration] = None)
 
 class GoogleAuthException(val message: String, val throwable: Throwable = null) extends Exception(message, throwable)
 
@@ -48,8 +54,9 @@ object GoogleAuth {
       "response_type" -> Seq("code"),
       "scope" -> Seq("openid email profile"),
       "redirect_uri" -> Seq(config.redirectUrl),
-      "state" -> Seq(antiForgeryToken)
-    ) ++ config.domain.map(domain => "hd" -> Seq(domain))
+      "state" -> Seq(antiForgeryToken)) ++
+      config.domain.map(domain => "hd" -> Seq(domain)) ++
+      config.maxAuthAge.map(age => "max_auth_age" -> Seq(s"${age.getStandardSeconds}"))
 
     discoveryDocument.map(dd => Redirect(s"${dd.authorization_endpoint}", queryString))
   }
