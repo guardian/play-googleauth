@@ -4,7 +4,7 @@ import play.api.mvc.Results.Redirect
 import play.api.mvc.{Filter, RequestHeader, Result}
 import scala.concurrent.Future
 
-case class FilterExemption(url: String)
+case class FilterExemption(path: String)
 
 object GoogleAuthFilters {
   class AuthFilterWithExemptions(
@@ -14,14 +14,14 @@ object GoogleAuthFilters {
     def apply(nextFilter: (RequestHeader) => Future[Result])
              (requestHeader: RequestHeader): Future[Result] = {
 
-      if (requestHeader.path.startsWith(loginUrl.url) ||
-        exemptions.exists(exemption => requestHeader.path.startsWith(exemption.url)))
+      if (requestHeader.path.startsWith(loginUrl.path) ||
+        exemptions.exists(exemption => requestHeader.path.startsWith(exemption.path)))
         nextFilter(requestHeader)
       else {
         UserIdentity.fromRequest(requestHeader) match {
           case Some(identity) if identity.isValid => nextFilter(requestHeader)
           case otherIdentity =>
-            Future.successful(Redirect(loginUrl.url))
+            Future.successful(Redirect(loginUrl.path))
         }
       }
     }
