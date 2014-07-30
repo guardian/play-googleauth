@@ -1,5 +1,6 @@
 package com.gu.googleauth
 
+import play.Play
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{Filter, RequestHeader, Result}
 import scala.concurrent.Future
@@ -15,7 +16,7 @@ object GoogleAuthFilters {
     def apply(nextFilter: (RequestHeader) => Future[Result])
              (requestHeader: RequestHeader): Future[Result] = {
 
-      if (requestHeader.path.startsWith(loginUrl.path) ||
+      if (Play.isTest || requestHeader.path.startsWith(loginUrl.path) ||
         exemptions.exists(exemption => requestHeader.path.startsWith(exemption.path)))
         nextFilter(requestHeader)
       else {
