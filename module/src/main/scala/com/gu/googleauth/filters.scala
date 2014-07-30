@@ -7,6 +7,7 @@ import scala.concurrent.Future
 case class FilterExemption(path: String)
 
 object GoogleAuthFilters {
+  val LOGIN_ORIGIN_KEY = "loginOriginUrl"
   class AuthFilterWithExemptions(
       loginUrl: FilterExemption,
       exemptions: Seq[FilterExemption]) extends Filter {
@@ -21,7 +22,8 @@ object GoogleAuthFilters {
         UserIdentity.fromRequest(requestHeader) match {
           case Some(identity) if identity.isValid => nextFilter(requestHeader)
           case otherIdentity =>
-            Future.successful(Redirect(loginUrl.path))
+            Future.successful(Redirect(loginUrl.path)
+              .addingToSession((LOGIN_ORIGIN_KEY, requestHeader.uri))(requestHeader))
         }
       }
     }
