@@ -7,7 +7,7 @@ for Play 2 applications.
 This has been extracted from the OpenID authentication support in Riff-Raff
 at the same time that it has been migrated over from OpenID to OpenID Connect.
 
-:boom: Note that `0.1.5` and `0.0.5` (for play 2.3/2.2 respectively) have a breaking change. `NonAuthAction` has
+:boom: Note that `0.1.6` and `0.0.5` (for play 2.3/2.2 respectively) have a breaking change. `NonAuthAction` has
 been removed and the `com.gu.googleauth.AuthenticatedRequest` has been replaced with the built in
 `play.api.mvc.Security.AuthenticatedRequest`. The `UserIdentity` object is no longer provided as an option.
 
