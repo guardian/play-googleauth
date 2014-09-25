@@ -27,7 +27,7 @@ object JwtClaims {
 }
 
 case class UserInfo(kind: String, gender: Option[String], sub: Option[String], name: String, given_name: String, family_name: String,
-                    profile: Option[String], picture: Option[String], email: String, email_verified: String, locale: String, hd: String)
+                    profile: Option[String], picture: Option[String], email: String, email_verified: String, locale: String, hd: Option[String])
 object UserInfo {
   implicit val userInfoReads = Json.reads[UserInfo]
   def fromJson(json:JsValue):UserInfo = json.as[UserInfo]
