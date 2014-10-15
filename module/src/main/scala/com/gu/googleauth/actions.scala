@@ -35,6 +35,11 @@ trait Actions {
   val LOGIN_ORIGIN_KEY = "loginOriginUrl"
 
   /**
+   * The configuration to use for these actions
+   */
+  def authConfig: GoogleAuthConfig
+
+  /**
    * The target that should be redirected to in order to carry out authentication
    */
   def loginTarget: Call
@@ -49,10 +54,16 @@ trait Actions {
     }
 
   /**
+   * Helper method that deals with getting a user identity from a request and establishing validity
+   */
+  private def userIdentity(request:RequestHeader) =
+      UserIdentity.fromRequest(request).filter(_.isValid || !authConfig.enforceValidity)
+
+  /**
    * This action ensures that the user is authenticated and their token is valid. Is a user is not logged in or their
    * token has expired then they will be authenticated.
    *
    * The AuthenticatedRequest will always have an identity.
    */
-  object AuthAction extends AuthenticatedBuilder(r => UserIdentity.fromRequest(r), r => sendForAuth(r))
+  object AuthAction extends AuthenticatedBuilder(r => userIdentity(r), r => sendForAuth(r))
 }

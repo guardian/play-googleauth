@@ -1,4 +1,5 @@
 @(request: play.api.mvc.Security.AuthenticatedRequest[AnyContent, com.gu.googleauth.UserIdentity], error: Option[String] = None)
+@import org.joda.time.DateTime
 
 <html>
     <head><title>Authorised</title></head>
@@ -7,6 +8,7 @@
         <p>This is an authorised page of the example application.</p>
         <p>It uses an AuthAction so will always have a user.</p>
         <p>In this case the logged in user is @request.user</p>
+        <p>The expiry time is @{new DateTime(request.user.exp*1000)}</p>
         <p>You can go to the <a href="@routes.Login.login()">login page</a>,
             a <a href="@routes.Application.authenticated()">page that requires authentication</a>
             or <a href="@routes.Login.logout()">logout</a>.</p>

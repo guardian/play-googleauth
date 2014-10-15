@@ -10,6 +10,7 @@ import org.joda.time.Duration
 
 trait AuthActions extends Actions {
   val loginTarget: Call = routes.Login.loginAction()
+  val authConfig = Login.googleAuthConfig
 }
 
 object Login extends Controller with AuthActions {
@@ -21,8 +22,9 @@ object Login extends Controller with AuthActions {
       "http://localhost:9000/oauth2callback",      // The redirect URL Google send users back to (must be the same as
                                                    //    that configured in the developer console)
       Some("guardian.co.uk"),                      // Google App domain to restrict login
-      Some(Duration.standardHours(1))              // Force the user to re-enter their credentials if they haven't done
+      Some(Duration.standardHours(1)),             // Force the user to re-enter their credentials if they haven't done
                                                    //    so in the last hour (this is stupid unless you are testing :)
+      true                                         // Re-authenticate (without prompting) with google when session expires
     )
 
   def login = Action { request =>

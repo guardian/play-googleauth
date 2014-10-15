@@ -1,6 +1,6 @@
 name := "play-googleauth-example"
 
-version := "0.1.5"
+version := "0.1.7"
 
 scalaVersion := "2.11.1"
 
