@@ -11,12 +11,22 @@ import java.security.SecureRandom
 import play.api.Application
 import org.joda.time.Duration
 
+/**
+ * The configuration class for Google authentication
+ * @param clientId The ClientID from the developer dashboard
+ * @param clientSecret The client secret from the developer dashboard
+ * @param redirectUrl The URL to return to after authentication has completed
+ * @param domain An optional domain to restrict login to (e.g. guardian.co.uk)
+ * @param maxAuthAge An optional duration after which you want a user to be prompted for their password again
+ * @param enforceValidity A boolean indicating whether you want a user to be re-authenticated when their session expires
+ */
 case class GoogleAuthConfig(
   clientId: String,
   clientSecret: String,
   redirectUrl: String,
   domain: Option[String],
-  maxAuthAge: Option[Duration] = None)
+  maxAuthAge: Option[Duration] = None,
+  enforceValidity: Boolean = true)
 
 class GoogleAuthException(val message: String, val throwable: Throwable = null) extends Exception(message, throwable)
 
@@ -49,7 +59,8 @@ object GoogleAuth {
   }
 
   def redirectToGoogle(config: GoogleAuthConfig, antiForgeryToken: String)
-                      (implicit context: ExecutionContext, application: Application): Future[Result] = {
+                      (implicit request: RequestHeader, context: ExecutionContext, application: Application): Future[Result] = {
+    val userIdentity = UserIdentity.fromRequest(request)
     val queryString: Map[String, Seq[String]] = Map(
       "client_id" -> Seq(config.clientId),
       "response_type" -> Seq("code"),
@@ -57,7 +68,8 @@ object GoogleAuth {
       "redirect_uri" -> Seq(config.redirectUrl),
       "state" -> Seq(antiForgeryToken)) ++
       config.domain.map(domain => "hd" -> Seq(domain)) ++
-      config.maxAuthAge.map(age => "max_auth_age" -> Seq(s"${age.getStandardSeconds}"))
+      config.maxAuthAge.map(age => "max_auth_age" -> Seq(s"${age.getStandardSeconds}")) ++
+      userIdentity.map(_.email).map("login_hint" -> Seq(_))
 
     discoveryDocument.map(dd => Redirect(s"${dd.authorization_endpoint}", queryString))
   }
