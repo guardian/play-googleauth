@@ -3,7 +3,6 @@ package com.gu.googleauth
 import com.google.gdata.client.appsforyourdomain.AppsGroupsService
 import scala.collection.JavaConverters._
 
-
 case class GoogleGroupConfig(
   adminUser: String,
   adminPassword: String,
