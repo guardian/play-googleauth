@@ -3,6 +3,15 @@ package com.gu.googleauth
 import com.google.gdata.client.appsforyourdomain.AppsGroupsService
 import scala.collection.JavaConverters._
 
+/**
+ * The configuration class for Google Group authentication
+ * @param adminUser Administrator user which needs access to the Provisioning API
+ *                  (this will need to be set up by a Domain administrator)
+ * @param adminPassword Administrator password
+ * @param domain Domain being configured
+ * @param applicationName Application name consuming the API
+ * @param directOnly If true, members with direct association only will be considered
+ */
 case class GoogleGroupConfig(
   adminUser: String,
   adminPassword: String,
