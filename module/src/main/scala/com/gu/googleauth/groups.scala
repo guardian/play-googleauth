@@ -1,7 +1,9 @@
 package com.gu.googleauth
 
 import com.google.gdata.client.appsforyourdomain.AppsGroupsService
-import scala.collection.JavaConverters._
+
+import scala.collection.convert.wrapAll._
+import scala.concurrent._
 
 /**
  * The configuration class for Google Group authentication
@@ -10,24 +12,24 @@ import scala.collection.JavaConverters._
  * @param adminPassword Administrator password
  * @param domain Domain being configured
  * @param applicationName Application name consuming the API
- * @param directOnly If true, members with direct association only will be considered
  */
 case class GoogleGroupConfig(
   adminUser: String,
   adminPassword: String,
   domain: String,
-  applicationName: String,
-  directOnly: Boolean = false)
+  applicationName: String)
 
-object GoogleGroupChecker {
+class GoogleGroupChecker(config: GoogleGroupConfig) {
 
-  def userIsInGroup(config: GoogleGroupConfig, userEmail: String, groupEmail: String): Boolean = {
-    val service = new AppsGroupsService(config.adminUser, config.adminPassword, config.domain, config.applicationName)
-    getGroupIds(service, config.directOnly, userEmail).contains(groupEmail)
-  }
+  val service = new AppsGroupsService(config.adminUser, config.adminPassword, config.domain, config.applicationName)
 
-  private def getGroupIds(service: AppsGroupsService, directOnly: Boolean, userEmail: String): Set[String] =
-    service.retrieveGroups(userEmail, directOnly).getEntries.asScala.flatMap { entry =>
-      Option(entry.getProperty("groupId"))
-    }.toSet
+  /**
+   * @param directOnly If true, members with direct association only will be considered
+   */
+  def retrieveGroupsFor(userEmail: String, directOnly: Boolean = false)(implicit ec: ExecutionContext): Future[Set[String]] = for {
+    groups <- Future { blocking { service.retrieveGroups(userEmail, directOnly) } }
+  } yield groups.getEntries.flatMap { entry =>
+    Option(entry.getProperty("groupId"))
+  }.toSet
+
 }
