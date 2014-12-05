@@ -1,6 +1,8 @@
 package com.gu.googleauth
 
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json._
+import play.api.libs.json.Reads._
+import play.api.libs.functional.syntax._
 import org.apache.commons.codec.binary.Base64
 
 case class DiscoveryDocument(authorization_endpoint: String, token_endpoint: String, userinfo_endpoint: String)
@@ -16,7 +18,13 @@ case class Token(access_token:String, token_type:String, expires_in:Long, id_tok
   val jwt = JsonWebToken(id_token)
 }
 object Token {
-  implicit val tokenReads = Json.reads[Token]
+  implicit val tokenReads: Reads[Token] = (
+    (JsPath \ "access_token").read[String] and
+      (JsPath \ "token_type").read[String] and
+      (JsPath \ "expires_in").read[Long].orElse((JsPath \ "expires_in").read[String].map(_.toLong)) and
+      (JsPath \ "id_token").read[String]
+    )(Token.apply _)
+
   def fromJson(json:JsValue):Token = Json.fromJson[Token](json).get
 }
 
