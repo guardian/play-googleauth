@@ -9,15 +9,15 @@ name               := "play-googleauth"
 
 organization       := "com.gu"
 
-scalaVersion       := "2.11.1"
+scalaVersion       := "2.11.6"
 
-crossScalaVersions := Seq("2.10.4", "2.11.1")
+crossScalaVersions := Seq("2.10.5", scalaVersion.value)
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play" % "2.3.0" % "provided",
-  "com.typesafe.play" %% "play-ws" % "2.3.0" % "provided",
+  "com.typesafe.play" %% "play" % "2.3.8" % "provided",
+  "com.typesafe.play" %% "play-ws" % "2.3.8" % "provided",
   "commons-codec" % "commons-codec" % "1.9",
   "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev53-1.20.0",
   "com.google.gdata" % "core" % "1.47.1"
