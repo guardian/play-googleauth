@@ -1,35 +1,63 @@
 package com.gu.googleauth
 
-import com.google.gdata.client.appsforyourdomain.AppsGroupsService
+import java.security.PrivateKey
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
+import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.services.admin.directory.{Directory, DirectoryScopes}
 
 import scala.collection.convert.wrapAll._
 import scala.concurrent._
 
 /**
- * The configuration class for Google Group authentication
- * @param adminUser Administrator user which needs access to the Provisioning API
- *                  (this will need to be set up by a Domain administrator)
- * @param adminPassword Administrator password
- * @param domain Domain being configured
- * @param applicationName Application name consuming the API
+ * A Service Account calls Google APIs on behalf of your application instead of an end-user.
+ * https://developers.google.com/identity/protocols/OAuth2#serviceaccount
+ *
+ * You can create a service account in the Google Developers Console:
+ *
+ * https://developers.google.com/identity/protocols/OAuth2ServiceAccount#creatinganaccount
+ *
+ * @param email email address of the Service Account
+ * @param privateKey the Service Account's private key - from the P12 file generated when the Service Account was created
+ * @param impersonatedUser the email address of the user the application will be impersonating
  */
-case class GoogleGroupConfig(
-  adminUser: String,
-  adminPassword: String,
-  domain: String,
-  applicationName: String)
+case class GoogleServiceAccount(
+  email: String,
+  privateKey: PrivateKey,
+  impersonatedUser: String
+)
 
-class GoogleGroupChecker(config: GoogleGroupConfig) {
+/**
+ * The Directory API can tell you what groups (ie Google Group) a user is in.
+ *
+ * You can use a Service Account to access the Directory API (in fact, non-Service access, ie web-user,
+ * doesn't seem to work?). The Service Account needs the following scope:
+ * https://www.googleapis.com/auth/admin.directory.group.readonly
+ *
+ * You also need a separate domain user account (eg example@guardian.co.uk), which
+ * will be 'impersonated' when making the calls.
+ */
+class GoogleGroupChecker(directoryServiceAccount: GoogleServiceAccount) {
 
-  val service = new AppsGroupsService(config.adminUser, config.adminPassword, config.domain, config.applicationName)
+  val directoryService = {
+    val transport = GoogleNetHttpTransport.newTrustedTransport()
+    val jsonFactory = JacksonFactory.getDefaultInstance
 
-  /**
-   * @param directOnly If true, members with direct association only will be considered
-   */
-  def retrieveGroupsFor(userEmail: String, directOnly: Boolean = false)(implicit ec: ExecutionContext): Future[Set[String]] = for {
-    groups <- Future { blocking { service.retrieveGroups(userEmail, directOnly) } }
-  } yield groups.getEntries.flatMap { entry =>
-    Option(entry.getProperty("groupId"))
-  }.toSet
+    val credential = new GoogleCredential.Builder()
+      .setTransport(transport)
+      .setJsonFactory(jsonFactory)
+      .setServiceAccountId(directoryServiceAccount.email)
+      .setServiceAccountUser(directoryServiceAccount.impersonatedUser)
+      .setServiceAccountPrivateKey(directoryServiceAccount.privateKey)
+      .setServiceAccountScopes(Seq(DirectoryScopes.ADMIN_DIRECTORY_GROUP_READONLY))
+      .build()
 
+    new Directory.Builder(transport, jsonFactory, null).setHttpRequestInitializer(credential).build
+  }
+
+  def retrieveGroupsFor(userEmail: String)(implicit ec: ExecutionContext): Future[Set[String]] = for {
+    resp <- Future { blocking { directoryService.groups.list.setUserKey(userEmail).execute() } }
+  } yield resp.getGroups.map(_.getEmail).toSet
+  
 }
