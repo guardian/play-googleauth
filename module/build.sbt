@@ -16,8 +16,8 @@ crossScalaVersions := Seq("2.10.5", scalaVersion.value)
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play" % "2.3.8" % "provided",
-  "com.typesafe.play" %% "play-ws" % "2.3.8" % "provided",
+  "com.typesafe.play" %% "play" % "2.4.0" % "provided",
+  "com.typesafe.play" %% "play-ws" % "2.4.0" % "provided",
   "commons-codec" % "commons-codec" % "1.9",
   "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev53-1.20.0",
   "com.google.gdata" % "core" % "1.47.1"
