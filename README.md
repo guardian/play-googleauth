@@ -4,28 +4,17 @@ Play Google Auth Module
 This module is a very simple implementation of OpenID Connect authentication
 for Play 2 applications.
 
-This has been extracted from the OpenID authentication support in Riff-Raff
-at the same time that it has been migrated over from OpenID to OpenID Connect.
-
-:boom: Versions `0.1.6` and `0.0.5-0.0.6` do not correctly re-validate when a sesison expires. The latest versions
-  fix this issue and provide the ability to disable it if it breaks your app (probably using AJAX requests).
-  You'll need to add a new `authConfig` field to your Actions trait that refers to your GoogleAuthConfig instance.
-
-:boom: Note that `0.1.6` and `0.0.5` (for play 2.3/2.2 respectively) have a breaking change. `NonAuthAction` has
-been removed and the `com.gu.googleauth.AuthenticatedRequest` has been replaced with the built in
-`play.api.mvc.Security.AuthenticatedRequest`. The `UserIdentity` object is no longer provided as an option.
-
 Versions
 --------
 
-For Play 2.3.x use the master branch:
+For Play 2.4.x use the master branch:
 ```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.1.11"
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.3.0"
 ```
 
-For Play 2.2.x use the `play2.2.x` branch:
+For Play 2.3.x use the `play2.3.x` branch:
 ```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.0.8"
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.2.1"
 ```
 
 Adding to your application
