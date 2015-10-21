@@ -110,8 +110,8 @@ object GoogleAuthConf {
 }
 
 private lazy val credentials: GoogleCredential = {
-  val fileInputStream = Try(new FileInputStream("/path/to/your-service-account-cert.json"))
-  GoogleCredential.fromStream(fileInputStream.get)
+  val fileInputStream = new FileInputStream("/path/to/your-service-account-cert.json")
+  GoogleCredential.fromStream(fileInputStream)
 }
 
 private val serviceAccount = GoogleServiceAccount(
