@@ -89,12 +89,6 @@ Ask the administrator of your organisation's Google Apps domain if you are unsur
 
 Once you have completed those 3 steps, you should be able to integrate it in your application:
 
-- Add the following in your configuration file:
-
-```scala
-serviceaccount.impersonatedUser=adminuser@yourdomain.com
-```
-
   - Make sure that the service account certificate is accessible
 
   - This is how you can build your credentials from the json cert file you have downloaded:
@@ -106,7 +100,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.gu.googleauth.GoogleServiceAccount
 
 object GoogleAuthConf {
-  val impersonatedUser = current.configuration.getString("serviceaccount.impersonatedUser").get
+  val impersonatedUser = ??? // read from config
 }
 
 private lazy val credentials: GoogleCredential = {
