@@ -3,6 +3,7 @@ Play Google Auth Module
 
 This module is a very simple implementation of OpenID Connect authentication
 for Play 2 applications.
+It can also be used to get information about the groups of your Google Apps Domain using the Directory API.
 
 Versions
 --------
@@ -53,3 +54,72 @@ usually fine as it is compatible.
 The token acquired from Google is **NOT** cryptographically verified. This is not a problem as it is obtained directly
 from Google over an SSL connection, used to authenticate the user and then thrown away. Do not keep the token around
 and use it elsewhere unless this code is modified to carry out the verification.
+
+Implement GoogleGroups-based access control using the [Directory API](https://developers.google.com/admin-sdk/directory/)
+-------------------------------------------------------------------------------------------------------------------------
+
+You can use the library to check that a user of your domain (e.g. guardian.co.uk) belongs to certain Google Groups. This
+is convenient to create an authorisation system in which only people who are members of some groups can access your
+application.
+
+In order to be able to use the Directory API, you must first set up your own Service account and make sure it has the
+right permissions.
+
+First, log in to your [Google Developer Console](https://console.developers.google.com/), go to your project and create a new service account.
+Follow the instructions given [here](https://developers.google.com/identity/protocols/OAuth2ServiceAccount) to create a service account.
+When asked to download the public/private key pair, choose the JSON option and keep it in a secure place.
+
+You will then need to contact the administrator of your organisation's Google Apps domain and ask them to authorise your service account to access user data in the Google Apps Domain.
+
+They will need to do so by adding specific [scopes](https://developers.google.com/admin-sdk/directory/v1/guides/authorizing) to the service account.
+This is done by granting the *clientId* of the service account with access to the required API scopes.
+
+In order to find out which groups the users of your domain belong to, the only scope you will need is *https://www.googleapis.com/auth/admin.directory.user.readonly*
+
+Finally, you need the email address of a user who has the permission to access the Admin APIs.
+It is not enough to be able to authenticate to your domain with a client ID and private key, you also need to specify the email address of one of the organisation's admin users.
+This email address should be set up to have specific privileges to read groups.
+We call this user the "impersonated user".
+
+As explained in the Google documentation about [Domain-Wide delegation of authority](https://developers.google.com/admin-sdk/directory/v1/guides/delegation):
+
+  > Only users with access to the Admin APIs can access the Admin SDK Directory API, therefore your service account needs to impersonate one of those users to access the Admin SDK Directory API.
+
+Ask the administrator of your organisation's Google Apps domain if you are unsure of what this email address is supposed to be.
+
+Once you have completed those 3 steps, you should be able to integrate it in your application:
+
+  - Make sure that the service account certificate is accessible
+
+  - This is how you can build your credentials from the json cert file you have downloaded:
+
+```scala
+import java.io.FileInputStream
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
+import com.gu.googleauth.GoogleServiceAccount
+
+object GoogleAuthConf {
+  val impersonatedUser = ??? // read from config
+}
+
+private lazy val credentials: GoogleCredential = {
+  val fileInputStream = new FileInputStream("/path/to/your-service-account-cert.json")
+  GoogleCredential.fromStream(fileInputStream)
+}
+
+private val serviceAccount = GoogleServiceAccount(
+  credentials.getServiceAccountId, // This should contain the *email address* that is associated with your service account
+  credentials.getServiceAccountPrivateKey, // This should contain the *private key* that is associated with your service account
+  GoogleAuthConf.impersonatedUser // This is the admin user email address we mentioned earlier
+)
+```
+
+- You should now be able to retrieve the groups for a given user
+
+```scala
+import com.gu.googleauth.GoogleGroupChecker
+
+val checker = new GoogleGroupChecker(serviceAccount)
+checker.retrieveGroupsFor(email)
+```
