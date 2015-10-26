@@ -26,7 +26,8 @@ case class GoogleAuthConfig(
   redirectUrl: String,
   domain: Option[String],
   maxAuthAge: Option[Duration] = None,
-  enforceValidity: Boolean = true)
+  enforceValidity: Boolean = true,
+  prompt: Option[String] = None)
 
 class GoogleAuthException(val message: String, val throwable: Throwable = null) extends Exception(message, throwable)
 
@@ -76,6 +77,7 @@ object GoogleAuth {
       "state" -> Seq(antiForgeryToken)) ++
       config.domain.map(domain => "hd" -> Seq(domain)) ++
       config.maxAuthAge.map(age => "max_auth_age" -> Seq(s"${age.getStandardSeconds}")) ++
+      config.prompt.map(prompt => "prompt" -> Seq(prompt)) ++
       userIdentity.map(_.email).map("login_hint" -> Seq(_))
 
     discoveryDocument(ws).map(dd => Redirect(s"${dd.authorization_endpoint}", queryString))
