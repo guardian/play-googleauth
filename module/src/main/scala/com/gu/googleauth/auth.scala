@@ -19,6 +19,8 @@ import org.joda.time.Duration
  * @param domain An optional domain to restrict login to (e.g. guardian.co.uk)
  * @param maxAuthAge An optional duration after which you want a user to be prompted for their password again
  * @param enforceValidity A boolean indicating whether you want a user to be re-authenticated when their session expires
+ * @param prompt An optional space delimited, case sensitive list of ASCII string values that specifies whether the
+ *               Authorization Server prompts the End-User for reauthentication and consent
  */
 case class GoogleAuthConfig(
   clientId: String,
