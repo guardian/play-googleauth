@@ -19,6 +19,8 @@ import org.joda.time.Duration
  * @param domain An optional domain to restrict login to (e.g. guardian.co.uk)
  * @param maxAuthAge An optional duration after which you want a user to be prompted for their password again
  * @param enforceValidity A boolean indicating whether you want a user to be re-authenticated when their session expires
+ * @param prompt An optional space delimited, case sensitive list of ASCII string values that specifies whether the
+ *               Authorization Server prompts the End-User for reauthentication and consent
  */
 case class GoogleAuthConfig(
   clientId: String,
@@ -26,7 +28,8 @@ case class GoogleAuthConfig(
   redirectUrl: String,
   domain: Option[String],
   maxAuthAge: Option[Duration] = None,
-  enforceValidity: Boolean = true)
+  enforceValidity: Boolean = true,
+  prompt: Option[String] = None)
 
 class GoogleAuthException(val message: String, val throwable: Throwable = null) extends Exception(message, throwable)
 
@@ -76,6 +79,7 @@ object GoogleAuth {
       "state" -> Seq(antiForgeryToken)) ++
       config.domain.map(domain => "hd" -> Seq(domain)) ++
       config.maxAuthAge.map(age => "max_auth_age" -> Seq(s"${age.getStandardSeconds}")) ++
+      config.prompt.map(prompt => "prompt" -> Seq(prompt)) ++
       userIdentity.map(_.email).map("login_hint" -> Seq(_))
 
     discoveryDocument(ws).map(dd => Redirect(s"${dd.authorization_endpoint}", queryString))
