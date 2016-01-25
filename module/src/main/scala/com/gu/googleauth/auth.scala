@@ -93,6 +93,10 @@ object GoogleAuth {
           googleResponse(response) { json =>
               val token = Token.fromJson(json)
               val jwt = token.jwt
+              config.domain foreach { domain =>
+                if (!jwt.claims.email.split("@").lastOption.exists(_ == domain))
+                  throw new GoogleAuthException("Configured Google domain does not match")
+              }
               WS.url(dd.userinfo_endpoint)
                 .withHeaders("Authorization" -> s"Bearer ${token.access_token}")
                 .get().map { response =>
