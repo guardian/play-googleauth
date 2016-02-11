@@ -1,17 +1,12 @@
-import sbtrelease._
-import ReleaseStateTransformations._
-
-releaseSettings
-
-sonatypeSettings
+import ReleaseTransformations._
 
 name               := "play-googleauth"
 
 organization       := "com.gu"
 
-scalaVersion       := "2.11.6"
+scalaVersion       := "2.11.7"
 
-crossScalaVersions := Seq("2.10.5", scalaVersion.value)
+crossScalaVersions := Seq("2.10.6", scalaVersion.value)
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
@@ -45,9 +40,9 @@ pomExtra := {
   </developers>
 }
 
-ReleaseKeys.crossBuild := true
+releaseCrossBuild := true
 
-ReleaseKeys.releaseProcess := Seq[ReleaseStep](
+releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
   inquireVersions,
   runClean,
@@ -56,11 +51,11 @@ ReleaseKeys.releaseProcess := Seq[ReleaseStep](
   commitReleaseVersion,
   tagRelease,
   ReleaseStep(
-    action = state => Project.extract(state).runTask(PgpKeys.publishSigned, state)._1,
+    action = Command.process("publishSigned", _),
     enableCrossBuild = true
   ),
   setNextVersion,
   commitNextVersion,
-  ReleaseStep(state => Project.extract(state).runTask(SonatypeKeys.sonatypeReleaseAll, state)._1),
+  ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
   pushChanges
 )
