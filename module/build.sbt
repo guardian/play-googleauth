@@ -42,7 +42,9 @@ pomExtra := {
 
 releaseCrossBuild := true
 
-releaseProcess := Seq[ReleaseStep](
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+
+releaseProcess := Seq(
   checkSnapshotDependencies,
   inquireVersions,
   runClean,
@@ -50,12 +52,9 @@ releaseProcess := Seq[ReleaseStep](
   setReleaseVersion,
   commitReleaseVersion,
   tagRelease,
-  ReleaseStep(
-    action = Command.process("publishSigned", _),
-    enableCrossBuild = true
-  ),
+  publishArtifacts,
   setNextVersion,
   commitNextVersion,
-  ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+  releaseStepCommand("sonatypeReleaseAll"),
   pushChanges
 )
