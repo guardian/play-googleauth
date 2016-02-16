@@ -77,6 +77,13 @@ trait Actions extends UserIdentifier {
 trait Filters extends UserIdentifier {
   def groupChecker: GoogleGroupChecker
 
+  /**
+    * This action ensures that the user is authenticated and has membership of *at least one* of the
+    * specified groups. If you want to ensure membership of multiple groups, you can chain multiple
+    * requireGroup() filters together.
+    *
+    * @param includedGroups if the user is a member of any one of these groups, they are allowed through
+    */
   def requireGroup[R[_] <: RequestHeader](
     includedGroups: Set[String],
     notInValidGroup: R[_] => Result = (_: R[_])  => Forbidden
