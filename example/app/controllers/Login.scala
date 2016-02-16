@@ -8,9 +8,10 @@ import com.gu.googleauth._
 import play.api.Play.current
 import org.joda.time.Duration
 
-trait AuthActions extends Actions {
+trait AuthActions extends Actions with Filters {
   val loginTarget: Call = routes.Login.loginAction()
   val authConfig = Login.googleAuthConfig
+  lazy val groupChecker = new GoogleGroupChecker(???) // Can't share these credentials!
 }
 
 object Login extends Controller with AuthActions {
