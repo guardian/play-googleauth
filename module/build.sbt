@@ -12,8 +12,8 @@ crossScalaVersions := Seq("2.10.6", scalaVersion.value)
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
-  play,
-  playWS,
+  play % "provided",
+  playWS % "provided",
   commonsCodec,
   googleDataAPI
 ) ++ googleDirectoryAPI
