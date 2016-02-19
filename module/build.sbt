@@ -1,4 +1,5 @@
 import ReleaseTransformations._
+import Dependencies._
 
 name               := "play-googleauth"
 
@@ -11,12 +12,11 @@ crossScalaVersions := Seq("2.10.6", scalaVersion.value)
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play" % "2.4.0" % "provided",
-  "com.typesafe.play" %% "play-ws" % "2.4.0" % "provided",
-  "commons-codec" % "commons-codec" % "1.9",
-  "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev53-1.20.0",
-  "com.google.gdata" % "core" % "1.47.1"
-)
+  play,
+  playWS,
+  commonsCodec,
+  googleDataAPI
+) ++ googleDirectoryAPI
 
 scalacOptions ++= Seq("-feature", "-deprecation")
 
