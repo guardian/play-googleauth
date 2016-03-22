@@ -11,7 +11,7 @@ object Dependencies {
 
   //versions
 
-  val playVersion = "2.4.0"
+  val playVersion = "2.5.0"
 
 
   //libraries

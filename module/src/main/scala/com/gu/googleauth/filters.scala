@@ -1,6 +1,6 @@
 package com.gu.googleauth
 
-import play.Play
+import akka.stream.Materializer
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{Filter, RequestHeader, Result}
 import scala.concurrent.Future
@@ -11,12 +11,12 @@ object GoogleAuthFilters {
   val LOGIN_ORIGIN_KEY = "loginOriginUrl"
   class AuthFilterWithExemptions(
       loginUrl: FilterExemption,
-      exemptions: Seq[FilterExemption]) extends Filter {
+      exemptions: Seq[FilterExemption])(implicit val mat: Materializer) extends Filter {
 
     def apply(nextFilter: (RequestHeader) => Future[Result])
              (requestHeader: RequestHeader): Future[Result] = {
 
-      if (Play.isTest || requestHeader.path.startsWith(loginUrl.path) ||
+      if (requestHeader.path.startsWith(loginUrl.path) ||
         exemptions.exists(exemption => requestHeader.path.startsWith(exemption.path)))
         nextFilter(requestHeader)
       else {
