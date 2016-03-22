@@ -1,21 +1,21 @@
 package controllers
 
+import javax.inject.Inject
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.Json
+import play.api.libs.ws.WSClient
 import scala.concurrent.Future
 import com.gu.googleauth._
-import play.api.Play.current
 import org.joda.time.Duration
 
 trait AuthActions extends Actions with Filters {
   val loginTarget: Call = routes.Login.loginAction()
-  val authConfig = Login.googleAuthConfig
+  val authConfig = ExampleConfiguration.googleAuthConfig
   lazy val groupChecker = new GoogleGroupChecker(???) // Can't share these credentials!
 }
 
-object Login extends Controller with AuthActions {
-  val ANTI_FORGERY_KEY = "antiForgeryToken"
+object ExampleConfiguration {
   val googleAuthConfig =
     GoogleAuthConfig(
       "863070799113-9oefm3nnjf0hu4g9k3k1ue3fopfvrtpg.apps.googleusercontent.com",  // The client ID from the dev console
@@ -27,6 +27,14 @@ object Login extends Controller with AuthActions {
                                                    //    so in the last hour (this is stupid unless you are testing :)
       true                                         // Re-authenticate (without prompting) with google when session expires
     )
+
+}
+
+class Login @Inject() (implicit val client: WSClient) extends Controller with AuthActions {
+
+  import ExampleConfiguration.googleAuthConfig
+
+  val ANTI_FORGERY_KEY = "antiForgeryToken"
 
   def login = Action { request =>
     val error = request.flash.get("error")
