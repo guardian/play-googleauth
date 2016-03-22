@@ -7,8 +7,6 @@ organization       := "com.gu"
 
 scalaVersion       := "2.11.7"
 
-crossScalaVersions := Seq("2.10.6", scalaVersion.value)
-
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
