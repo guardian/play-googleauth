@@ -6,7 +6,7 @@ import play.api.mvc.{Action, Controller}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object Application extends Controller with AuthActions {
+class Application extends Controller with AuthActions {
   type GoogleAuthRequest[A] = AuthenticatedRequest[A, googleauth.UserIdentity]
 
   def index = Action { request => Ok(views.html.index(request)) }
