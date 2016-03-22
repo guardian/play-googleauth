@@ -8,12 +8,17 @@ It can also be used to get information about the groups of your Google Apps Doma
 Versions
 --------
 
-For Play 2.4.x use the master branch [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11):
+For Play 2.5.x use version 0.4.x [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11):
 ```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.3.3"
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.4.0"
 ```
 
-For Play 2.3.x use the `play2.3.x` branch:
+For Play 2.4.x use version 0.3.x (`play-2.4.x` branch)
+```
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.3.7"
+```
+
+For Play 2.3.x use version 0.2.x (`play-2.3.x` branch):
 ```
 libraryDependencies += "com.gu" %% "play-googleauth" % "0.2.2"
 ```
