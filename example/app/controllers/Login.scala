@@ -30,11 +30,15 @@ object ExampleConfiguration {
 
 }
 
-class Login @Inject() (implicit val client: WSClient) extends Controller with AuthActions {
+class Login @Inject() (implicit override val wsClient: WSClient) extends Controller with AuthActions {
 
   import ExampleConfiguration.googleAuthConfig
 
   val ANTI_FORGERY_KEY = "antiForgeryToken"
+  val requiredGoogleGroups = Set("example")
+
+  override val defaultRedirectTarget = routes.Login.login()
+  override val failureRedirectTarget: Call = routes.Login.login()
 
   def login = Action { request =>
     val error = request.flash.get("error")
@@ -51,55 +55,19 @@ class Login @Inject() (implicit val client: WSClient) extends Controller with Au
     }
   }
 
-
   /*
-  User comes back from Google.
-  We must ensure we have the anti forgery token from the loginAction call and pass this into a verification call which
-  will return a Future[UserIdentity] if the authentication is successful. If unsuccessful then the Future will fail.
-
+  Looks up user's identity via Google and enforces required Google groups
    */
   def oauth2Callback = Action.async { implicit request =>
-    val session = request.session
-    session.get(ANTI_FORGERY_KEY) match {
-      case None =>
-        Future.successful(Redirect(routes.Login.login()).flashing("error" -> "Anti forgery token missing in session"))
-      case Some(token) =>
-        GoogleAuth.validatedUserIdentity(googleAuthConfig, token).map { identity =>
-          // We store the URL a user was trying to get to in the LOGIN_ORIGIN_KEY in AuthAction
-          // Redirect a user back there now if it exists
-          val redirect = session.get(LOGIN_ORIGIN_KEY) match {
-            case Some(url) => Redirect(url)
-            case None => Redirect(routes.Application.index())
-          }
-          // Store the JSON representation of the identity in the session - this is checked by AuthAction later
-          redirect.withSession {
-            session + (UserIdentity.KEY -> Json.toJson(identity).toString) - ANTI_FORGERY_KEY - LOGIN_ORIGIN_KEY
-          }
-        } recover {
-          case t =>
-            // you might want to record login failures here - we just redirect to the login page
-            Redirect(routes.Login.login())
-              .withSession(session - ANTI_FORGERY_KEY)
-              .flashing("error" -> s"Login failure: ${t.toString}")
-        }
-    }
+    (for {
+      identity <- checkIdentity()
+      _ <- enforceGoogleGroups(identity, requiredGoogleGroups, groupChecker)  // if Google group membership is required
+    } yield {
+      setupSessionWhenSuccessful(identity)
+    }).merge
   }
 
   def logout = Action { implicit request =>
     Redirect(routes.Application.index()).withNewSession
   }
-
-  // TODO update example application
-  def oauth2Callback2 = Action.async { implicit request =>
-    val requiredGoogleGroups = Set("example")
-    for {
-      identity <- GoogleAuth.checkIdentity(googleAuthConf, failureUrl)
-      _ <- GoogleAuth.enforceGoogleGroups(identity, requiredGoogleGroups, groupChecker, googleAuthConf, failureUrl)
-    } yield {
-      // happy days
-      GoogleAuth.setupSessionWhenSuccessful(identity, googleAuthConf, defaultRedirectUrl)
-    }
-    ???
-  }
-
 }
