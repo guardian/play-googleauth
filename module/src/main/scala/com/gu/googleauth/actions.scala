@@ -1,13 +1,19 @@
 package com.gu.googleauth
 
-import play.api.libs.json.{JsValue, Format, Json}
+import cats.data.{Xor, XorT}
+import cats.std.future._
+import cats.syntax.applicativeError._
+import play.api.libs.json.{Format, JsValue, Json}
 import play.api.Logger
+import play.api.libs.ws.WSClient
 import play.api.mvc.Results._
 import play.api.mvc.Security.{AuthenticatedBuilder, AuthenticatedRequest}
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.postfixOps
 
 
 case class UserIdentity(sub: String, email: String, firstName: String, lastName: String, exp: Long, avatarUrl: Option[String]) {
@@ -41,11 +47,13 @@ trait UserIdentifier {
   /**
     * Helper method that deals with getting a user identity from a request and establishing validity
     */
-  def userIdentity(request:RequestHeader) =
+  def userIdentity(request: RequestHeader) =
     UserIdentity.fromRequest(request).filter(_.isValid || !authConfig.enforceValidity)
 }
 
 trait Actions extends UserIdentifier {
+  implicit def wsClient: WSClient
+
   /**
    * The target that should be redirected to in order to carry out authentication
    */
@@ -71,12 +79,78 @@ trait Actions extends UserIdentifier {
     }
 
   /**
+   * Extracts user from Google response and validates it, redirecting to `failureRedirectTarget` if the check fails.
+   */
+  def checkIdentity()(implicit wsClient: WSClient, request: RequestHeader): XorT[Future, Result, UserIdentity] = {
+    GoogleAuth.validatedUserIdentity(authConfig, authConfig.antiForgeryKey).attemptT
+      .leftMap {
+        case e: IllegalArgumentException =>
+          Logger.warn("Login failure, anti-forgery token", e)
+          redirectWithError(failureRedirectTarget, "Login failure, anti-forgery token did not match", authConfig.antiForgeryKey, request.session)
+        case e: GoogleAuthException =>
+          Logger.warn("Login failure, GoogleAuthException", e)
+          redirectWithError(failureRedirectTarget, e.getMessage, authConfig.antiForgeryKey, request.session)
+        case e: Throwable =>
+          Logger.warn("Login failure", e)
+          redirectWithError(failureRedirectTarget, e.getMessage, authConfig.antiForgeryKey, request.session)
+      }
+  }
+
+  /**
+   * Looks up user's Google Groups and ensures they belong to any that are required. Redirects to
+    * `failureRedirectTarget` if the user is not a member of any required group.
+   */
+  def enforceGoogleGroups(userIdentity: UserIdentity, requiredGoogleGroups: Set[String], googleGroupChecker: GoogleGroupChecker)
+                         (implicit request: RequestHeader): XorT[Future, Result, Unit] = {
+    googleGroupChecker.retrieveGroupsFor(userIdentity.email).attemptT
+      .leftMap { t =>
+        Logger.warn("Login failure, Could not look up user's Google groups", t)
+        redirectWithError(failureRedirectTarget, "Unable to look up user's 2FA status", authConfig.antiForgeryKey, request.session)
+      }
+      .map { userGroups =>
+        if (Actions.checkGoogleGroups(userGroups, requiredGoogleGroups)) {
+          Xor.right(())
+        } else {
+          Logger.info("Login failure, user not in 2FA group")
+          Xor.left(redirectWithError(failureRedirectTarget, "You must be in the 2-factor auth Google group", authConfig.antiForgeryKey, request.session))
+        }
+      }
+  }
+
+  private def redirectWithError(target: Call, message: String, antiForgeryKey: String, session: Session): Result = {
+    Redirect(target)
+      .withSession(session - antiForgeryKey)
+      .flashing("error" -> s"Login failure. $message")
+  }
+
+  /**
+   * Redirects user with configured play-googleauth session.
+   */
+  def setupSessionWhenSuccessful(userIdentity: UserIdentity)(implicit request: RequestHeader): Result = {
+    val redirect = request.session.get(GoogleAuthFilters.LOGIN_ORIGIN_KEY) match {
+      case Some(url) => Redirect(url)
+      case None => Redirect(defaultRedirectTarget)
+    }
+    // Store the JSON representation of the identity in the session - this is checked by AuthAction later
+    redirect.withSession {
+      request.session + (UserIdentity.KEY -> Json.toJson(userIdentity).toString) - authConfig.antiForgeryKey - GoogleAuthFilters.LOGIN_ORIGIN_KEY
+    }
+  }
+
+  /**
    * This action ensures that the user is authenticated and their token is valid. Is a user is not logged in or their
    * token has expired then they will be authenticated.
    *
    * The AuthenticatedRequest will always have an identity.
    */
   object AuthAction extends AuthenticatedBuilder(r => userIdentity(r), r => sendForAuth(r))
+}
+
+object Actions {
+  private[googleauth] def checkGoogleGroups(userGroups: Set[String], requiredGroups: Set[String]): Boolean = {
+    if (userGroups.intersect(requiredGroups) == requiredGroups) true
+    else false
+  }
 }
 
 trait Filters extends UserIdentifier {
@@ -100,6 +174,5 @@ trait Filters extends UserIdentifier {
         Some(notInValidGroup(request))
       }
     }
-
   }
 }
