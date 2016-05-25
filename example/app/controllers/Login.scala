@@ -49,10 +49,7 @@ class Login @Inject() (implicit override val wsClient: WSClient) extends Control
   Redirect to Google with anti forgery token (that we keep in session storage - note that flashing is NOT secure)
    */
   def loginAction = Action.async { implicit request =>
-    val antiForgeryToken = GoogleAuth.generateAntiForgeryToken()
-    GoogleAuth.redirectToGoogle(googleAuthConfig, antiForgeryToken).map {
-      _.withSession { request.session + (ANTI_FORGERY_KEY -> antiForgeryToken) }
-    }
+    startGoogleLogin()
   }
 
   /*

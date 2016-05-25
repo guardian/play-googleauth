@@ -79,6 +79,16 @@ trait Actions extends UserIdentifier {
     }
 
   /**
+    * Redirects user to Google to start the login.
+    */
+  def startGoogleLogin()(implicit request: RequestHeader): Future[Result] = {
+    val antiForgeryToken = GoogleAuth.generateAntiForgeryToken()
+    GoogleAuth.redirectToGoogle(authConfig, antiForgeryToken).map {
+      _.withSession { request.session + (authConfig.antiForgeryKey -> antiForgeryToken) }
+    }
+  }
+
+  /**
    * Extracts user from Google response and validates it, redirecting to `failureRedirectTarget` if the check fails.
    */
   def checkIdentity()(implicit wsClient: WSClient, request: RequestHeader): XorT[Future, Result, UserIdentity] = {
