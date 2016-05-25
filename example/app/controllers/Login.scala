@@ -89,4 +89,17 @@ class Login @Inject() (implicit val client: WSClient) extends Controller with Au
     Redirect(routes.Application.index()).withNewSession
   }
 
+  // TODO update example application
+  def oauth2Callback2 = Action.async { implicit request =>
+    val requiredGoogleGroups = Set("example")
+    for {
+      identity <- GoogleAuth.checkIdentity(googleAuthConf, failureUrl)
+      _ <- GoogleAuth.enforceGoogleGroups(identity, requiredGoogleGroups, groupChecker, googleAuthConf, failureUrl)
+    } yield {
+      // happy days
+      GoogleAuth.setupSessionWhenSuccessful(identity, googleAuthConf, defaultRedirectUrl)
+    }
+    ???
+  }
+
 }

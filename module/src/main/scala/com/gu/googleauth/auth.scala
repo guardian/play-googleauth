@@ -1,17 +1,17 @@
 package com.gu.googleauth
 
-import play.api.mvc.Results.Redirect
-import play.api.mvc.{RequestHeader, Result}
-
-import scala.concurrent.{ExecutionContext, Future}
-import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.libs.json.JsValue
-
-import scala.language.postfixOps
 import java.math.BigInteger
 import java.security.SecureRandom
 
 import org.joda.time.Duration
+import play.api.libs.json.JsValue
+import play.api.libs.ws.{WSClient, WSResponse}
+import play.api.mvc.Results.Redirect
+import play.api.mvc.{RequestHeader, Result}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
+import scala.language.postfixOps
 
 /**
  * The configuration class for Google authentication
@@ -23,6 +23,7 @@ import org.joda.time.Duration
  * @param enforceValidity A boolean indicating whether you want a user to be re-authenticated when their session expires
  * @param prompt An optional space delimited, case sensitive list of ASCII string values that specifies whether the
  *               Authorization Server prompts the End-User for reauthentication and consent
+ * @param antiForgeryKey A string that determines the session key used to store Google's anti forgery token
  */
 case class GoogleAuthConfig(
   clientId: String,
@@ -31,7 +32,9 @@ case class GoogleAuthConfig(
   domain: Option[String],
   maxAuthAge: Option[Duration] = None,
   enforceValidity: Boolean = true,
-  prompt: Option[String] = None)
+  prompt: Option[String] = None,
+  antiForgeryKey: String = "antiForgeryToken"
+)
 
 class GoogleAuthException(val message: String, val throwable: Throwable = null) extends Exception(message, throwable)
 

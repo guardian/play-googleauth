@@ -47,14 +47,19 @@ trait UserIdentifier {
 
 trait Actions extends UserIdentifier {
   /**
-   * A Play session key that stores the target URL that was being accessed when redirected for authentication
-   */
-  val LOGIN_ORIGIN_KEY = "loginOriginUrl"
-
-  /**
    * The target that should be redirected to in order to carry out authentication
    */
   def loginTarget: Call
+
+  /**
+   * The target that should be redirected to if login fails
+   */
+  val failureRedirectTarget: Call
+
+  /**
+    * The target that should be redirected to if no redirect URL is provided (generally `home`)
+    */
+  val defaultRedirectTarget: Call
 
   /**
    * Helper method that deals with sending a client for authentication. Typically this should store the target URL and
@@ -62,7 +67,7 @@ trait Actions extends UserIdentifier {
    */
   def sendForAuth[A](request:RequestHeader) =
     Redirect(loginTarget).withSession {
-      request.session + (LOGIN_ORIGIN_KEY, request.uri)
+      request.session + (GoogleAuthFilters.LOGIN_ORIGIN_KEY, request.uri)
     }
 
   /**
