@@ -136,6 +136,31 @@ trait Actions extends UserIdentifier {
       }
   }
 
+  /**
+    * Handle the OAuth2 callback, which logs the user in and redirects them appropriately.
+    */
+  def oauth2Callback()(implicit request: RequestHeader): Future[Result] = {
+    (for {
+      identity <- checkIdentity()
+    } yield {
+      setupSessionWhenSuccessful(identity)
+    }).merge
+  }
+
+  /**
+   * Handle the OAuth2 callback, which logs the user in and redirects them appropriately.
+    *
+    * Also ensures the user belongs to the (provided) required Google Groups.
+   */
+  def oauth2Callback(requiredGoogleGroups: Set[String], groupChecker: GoogleGroupChecker)(implicit request: RequestHeader): Future[Result] = {
+    (for {
+      identity <- checkIdentity()
+      _ <- enforceGoogleGroups(identity, requiredGoogleGroups, groupChecker)  // if Google group membership is required
+    } yield {
+      setupSessionWhenSuccessful(identity)
+    }).merge
+  }
+
   private def redirectWithError(target: Call, message: String, antiForgeryKey: String, session: Session): Result = {
     Redirect(target)
       .withSession(session - antiForgeryKey)
