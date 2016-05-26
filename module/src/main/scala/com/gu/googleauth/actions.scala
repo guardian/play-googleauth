@@ -18,6 +18,7 @@ import scala.language.postfixOps
 
 case class UserIdentity(sub: String, email: String, firstName: String, lastName: String, exp: Long, avatarUrl: Option[String]) {
   lazy val fullName = firstName + " " + lastName
+  lazy val username = email.split("@").head
   lazy val emailDomain = email.split("@").last
   lazy val asJson = Json.stringify(Json.toJson(this))
   lazy val isValid = System.currentTimeMillis < exp * 1000
