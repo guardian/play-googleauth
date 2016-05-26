@@ -92,18 +92,27 @@ trait Actions extends UserIdentifier {
    * Extracts user from Google response and validates it, redirecting to `failureRedirectTarget` if the check fails.
    */
   def checkIdentity()(implicit wsClient: WSClient, request: RequestHeader): XorT[Future, Result, UserIdentity] = {
-    GoogleAuth.validatedUserIdentity(authConfig, authConfig.antiForgeryKey).attemptT
-      .leftMap {
-        case e: IllegalArgumentException =>
-          Logger.warn("Login failure, anti-forgery token", e)
-          redirectWithError(failureRedirectTarget, "Login failure, anti-forgery token did not match", authConfig.antiForgeryKey, request.session)
-        case e: GoogleAuthException =>
-          Logger.warn("Login failure, GoogleAuthException", e)
-          redirectWithError(failureRedirectTarget, e.getMessage, authConfig.antiForgeryKey, request.session)
-        case e: Throwable =>
-          Logger.warn("Login failure", e)
-          redirectWithError(failureRedirectTarget, e.getMessage, authConfig.antiForgeryKey, request.session)
-      }
+    request.session.get(authConfig.antiForgeryKey) match {
+      case Some(token) =>
+        GoogleAuth.validatedUserIdentity(authConfig, token).attemptT.leftMap {
+          case e: IllegalArgumentException =>
+            Logger.warn("Login failure, anti-forgery token", e)
+            redirectWithError(failureRedirectTarget, "Login failure, anti-forgery token did not match", authConfig.antiForgeryKey, request.session)
+          case e: GoogleAuthException =>
+            Logger.warn("Login failure, GoogleAuthException", e)
+            redirectWithError(failureRedirectTarget, e.getMessage, authConfig.antiForgeryKey, request.session)
+          case e: Throwable =>
+            Logger.warn("Login failure", e)
+            redirectWithError(failureRedirectTarget, e.getMessage, authConfig.antiForgeryKey, request.session)
+        }
+      case None =>
+        Logger.warn("Login failure, anti-forgery token missing")
+        XorT.left[Future, Result, UserIdentity] {
+          Future.successful {
+            redirectWithError(failureRedirectTarget, "Login failure, anti-forgery token missing", authConfig.antiForgeryKey, request.session)
+          }
+        }
+    }
   }
 
   /**
