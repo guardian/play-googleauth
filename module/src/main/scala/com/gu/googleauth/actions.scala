@@ -139,7 +139,7 @@ trait Actions extends UserIdentifier {
   /**
     * Handle the OAuth2 callback, which logs the user in and redirects them appropriately.
     */
-  def oauth2Callback()(implicit request: RequestHeader): Future[Result] = {
+  def processOauth2Callback()(implicit request: RequestHeader): Future[Result] = {
     (for {
       identity <- checkIdentity()
     } yield {
@@ -152,7 +152,7 @@ trait Actions extends UserIdentifier {
     *
     * Also ensures the user belongs to the (provided) required Google Groups.
    */
-  def oauth2Callback(requiredGoogleGroups: Set[String], groupChecker: GoogleGroupChecker)(implicit request: RequestHeader): Future[Result] = {
+  def processOauth2Callback(requiredGoogleGroups: Set[String], groupChecker: GoogleGroupChecker)(implicit request: RequestHeader): Future[Result] = {
     (for {
       identity <- checkIdentity()
       _ <- enforceGoogleGroups(identity, requiredGoogleGroups, groupChecker)  // if Google group membership is required
