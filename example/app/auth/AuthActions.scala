@@ -20,7 +20,7 @@ trait AuthActions extends Actions with Filters {
     clientId     = conf.getString("your.clientId.config.path").get,
     clientSecret = conf.getString("your.clientSecret.config.path").get,
     redirectUrl  = conf.getString("your.redirectUrl.config.path").get,
-    domain       = conf.getString("your.app's-domain.config.path")
+    domain       = conf.getString("your.apps-domain.config.path")
   )
   // your app's routing
   override val loginTarget = routes.Login.loginAction()
