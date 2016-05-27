@@ -56,13 +56,13 @@ trait Actions extends UserIdentifier {
   implicit def wsClient: WSClient
 
   /**
-   * The target that should be redirected to in order to carry out authentication
-   */
+    * The target that should be redirected to in order to carry out authentication
+    */
   def loginTarget: Call
 
   /**
-   * The target that should be redirected to if login fails
-   */
+    * The target that should be redirected to if login fails
+    */
   val failureRedirectTarget: Call
 
   /**
@@ -71,10 +71,10 @@ trait Actions extends UserIdentifier {
   val defaultRedirectTarget: Call
 
   /**
-   * Helper method that deals with sending a client for authentication. Typically this should store the target URL and
-   * redirect to the loginTarget. There shouldn't really be any need to override this.
-   */
-  def sendForAuth[A](request:RequestHeader) =
+    * Helper method that deals with sending a client for authentication. Typically this should store the target URL and
+    * redirect to the loginTarget. There shouldn't really be any need to override this.
+    */
+  def sendForAuth[A](request: RequestHeader) =
     Redirect(loginTarget).withSession {
       request.session + (GoogleAuthFilters.LOGIN_ORIGIN_KEY, request.uri)
     }
@@ -90,9 +90,9 @@ trait Actions extends UserIdentifier {
   }
 
   /**
-   * Extracts user from Google response and validates it, redirecting to `failureRedirectTarget` if the check fails.
-   */
-  def checkIdentity()(implicit wsClient: WSClient, request: RequestHeader): XorT[Future, Result, UserIdentity] = {
+    * Extracts user from Google response and validates it, redirecting to `failureRedirectTarget` if the check fails.
+    */
+  def checkIdentity()(implicit request: RequestHeader): XorT[Future, Result, UserIdentity] = {
     request.session.get(authConfig.antiForgeryKey) match {
       case Some(token) =>
         GoogleAuth.validatedUserIdentity(authConfig, token).attemptT.leftMap {
@@ -117,9 +117,9 @@ trait Actions extends UserIdentifier {
   }
 
   /**
-   * Looks up user's Google Groups and ensures they belong to any that are required. Redirects to
+    * Looks up user's Google Groups and ensures they belong to any that are required. Redirects to
     * `failureRedirectTarget` if the user is not a member of any required group.
-   */
+    */
   def enforceGoogleGroups(userIdentity: UserIdentity, requiredGoogleGroups: Set[String], googleGroupChecker: GoogleGroupChecker)
                          (implicit request: RequestHeader): XorT[Future, Result, Unit] = {
     googleGroupChecker.retrieveGroupsFor(userIdentity.email).attemptT
@@ -149,14 +149,14 @@ trait Actions extends UserIdentifier {
   }
 
   /**
-   * Handle the OAuth2 callback, which logs the user in and redirects them appropriately.
+    * Handle the OAuth2 callback, which logs the user in and redirects them appropriately.
     *
     * Also ensures the user belongs to the (provided) required Google Groups.
-   */
+    */
   def processOauth2Callback(requiredGoogleGroups: Set[String], groupChecker: GoogleGroupChecker)(implicit request: RequestHeader): Future[Result] = {
     (for {
       identity <- checkIdentity()
-      _ <- enforceGoogleGroups(identity, requiredGoogleGroups, groupChecker)  // if Google group membership is required
+      _ <- enforceGoogleGroups(identity, requiredGoogleGroups, groupChecker)
     } yield {
       setupSessionWhenSuccessful(identity)
     }).merge
@@ -169,8 +169,8 @@ trait Actions extends UserIdentifier {
   }
 
   /**
-   * Redirects user with configured play-googleauth session.
-   */
+    * Redirects user with configured play-googleauth session.
+    */
   def setupSessionWhenSuccessful(userIdentity: UserIdentity)(implicit request: RequestHeader): Result = {
     val redirect = request.session.get(GoogleAuthFilters.LOGIN_ORIGIN_KEY) match {
       case Some(url) => Redirect(url)
