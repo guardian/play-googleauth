@@ -120,19 +120,19 @@ trait Actions extends UserIdentifier {
     * Looks up user's Google Groups and ensures they belong to any that are required. Redirects to
     * `failureRedirectTarget` if the user is not a member of any required group.
     */
-  def enforceGoogleGroups(userIdentity: UserIdentity, requiredGoogleGroups: Set[String], googleGroupChecker: GoogleGroupChecker)
+  def enforceGoogleGroups(userIdentity: UserIdentity, requiredGoogleGroups: Set[String], googleGroupChecker: GoogleGroupChecker, errorMessage: String = "Login failure. You do not belong to the required Google groups")
                          (implicit request: RequestHeader): XorT[Future, Result, Unit] = {
     googleGroupChecker.retrieveGroupsFor(userIdentity.email).attemptT
       .leftMap { t =>
         Logger.warn("Login failure, Could not look up user's Google groups", t)
-        redirectWithError(failureRedirectTarget, "Unable to look up user's 2FA status", authConfig.antiForgeryKey, request.session)
+        redirectWithError(failureRedirectTarget, "Login failure. Unable to look up Google Group membership", authConfig.antiForgeryKey, request.session)
       }
       .map { userGroups =>
         if (Actions.checkGoogleGroups(userGroups, requiredGoogleGroups)) {
           Xor.right(())
         } else {
-          Logger.info("Login failure, user not in 2FA group")
-          Xor.left(redirectWithError(failureRedirectTarget, "You must be in the 2-factor auth Google group", authConfig.antiForgeryKey, request.session))
+          Logger.info("Login failure, user not in required Google groups")
+          Xor.left(redirectWithError(failureRedirectTarget, errorMessage, authConfig.antiForgeryKey, request.session))
         }
       }
   }
@@ -193,8 +193,7 @@ trait Actions extends UserIdentifier {
 
 object Actions {
   private[googleauth] def checkGoogleGroups(userGroups: Set[String], requiredGroups: Set[String]): Boolean = {
-    if (userGroups.intersect(requiredGroups) == requiredGroups) true
-    else false
+    userGroups.intersect(requiredGroups) == requiredGroups
   }
 }
 
