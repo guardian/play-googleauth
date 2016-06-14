@@ -8,9 +8,9 @@ It can also be used to get information about the groups of your Google Apps Doma
 Versions
 --------
 
-For Play 2.5.x use version 0.4.x [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11):
+For Play 2.5.x use version 0.5.x [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11):
 ```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.4.0"
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.5.0"
 ```
 
 For Play 2.4.x use version 0.3.x (`play-2.4.x` branch)
@@ -33,12 +33,13 @@ In order to add Google authentication to your Play app you must:
  - add play-googleauth to your libraryDependencies
  - create a GoogleAuthConfig instance with your API credentials and callback details (the callback must match both your
  app and the value you set in the developer console)
- - implement a login controller that has actions and routes for the login screen, login action, oauth callback and
- logout
- - implement a small trait that extends com.gu.googleauth.Actions and sets `loginTarget` to be the login action call and
-   `authConfig` to be your GoogleAuthConfig instance
- - use `AuthAction` instead of `Action` to wrap actions in your controllers (these should be made
- available by extending the trait you implemented earlier
+ - implement a login controller that has actions and routes for the login action, oauth callback, logout and
+ a login screen (if required)
+ - implement a trait that extends com.gu.googleauth.Actions, sets the appropriate redirect targets and provides an
+ `authConfig` from your Google credentials
+ - (optionally) configure a Google Group Checker to enforce Google Group membership
+ - use `AuthAction` instead of `Action` to wrap actions in your controllers (these should be made available by
+ extending the trait you implemented earlier
 
 See the [example](https://github.com/guardian/play-googleauth/tree/master/example) application to see how this is done.
 
