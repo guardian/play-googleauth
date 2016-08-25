@@ -5,14 +5,14 @@ name               := "play-googleauth"
 
 organization       := "com.gu"
 
-scalaVersion       := "2.11.7"
+scalaVersion       := "2.11.8"
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
   play % "provided",
   playWS % "provided",
-  "org.typelevel" %% "cats" % "0.6.0",
+  "org.typelevel" %% "cats-core" % "0.7.0",
   commonsCodec,
   googleDataAPI,
   "org.scalatest" %% "scalatest" % "2.2.6" % "test"
