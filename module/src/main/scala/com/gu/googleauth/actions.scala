@@ -1,7 +1,7 @@
 package com.gu.googleauth
 
 import cats.data.{Xor, XorT}
-import cats.std.future._
+import cats.instances.future._
 import cats.syntax.applicativeError._
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.Logger
