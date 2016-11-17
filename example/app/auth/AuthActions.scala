@@ -20,7 +20,7 @@ trait AuthActions extends Actions with Filters {
     clientId     = conf.getString("your.clientId.config.path").get,
     clientSecret = conf.getString("your.clientSecret.config.path").get,
     redirectUrl  = conf.getString("your.redirectUrl.config.path").get,
-    domain       = conf.getString("your.apps-domain.config.path")
+    domain       = conf.getString("your.apps-domain.config.path").get
   )
   // your app's routing
   override val loginTarget = routes.Login.loginAction()
@@ -34,6 +34,6 @@ trait AuthActions extends Actions with Filters {
       .getOrElse(Set.empty[String])
   // groupChecker only needed here because `Filters` is mixed-in (to provide the `requireGroup` filter example)
   override lazy val groupChecker = new GoogleGroupChecker(
-    new GoogleServiceAccount(???, ???, ???) // from your secret config (and/or via JSON service account credentials file)
+    GoogleServiceAccount(???, ???, ???) // from your secret config (and/or via JSON service account credentials file)
   )
 }

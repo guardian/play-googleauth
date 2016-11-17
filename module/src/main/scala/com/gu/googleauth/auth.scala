@@ -25,16 +25,48 @@ import scala.language.postfixOps
  *               Authorization Server prompts the End-User for reauthentication and consent
  * @param antiForgeryKey A string that determines the session key used to store Google's anti forgery token
  */
-case class GoogleAuthConfig(
+case class GoogleAuthConfig private(
   clientId: String,
   clientSecret: String,
   redirectUrl: String,
   domain: Option[String],
-  maxAuthAge: Option[Duration] = None,
-  enforceValidity: Boolean = true,
-  prompt: Option[String] = None,
-  antiForgeryKey: String = "antiForgeryToken"
+  maxAuthAge: Option[Duration],
+  enforceValidity: Boolean,
+  prompt: Option[String],
+  antiForgeryKey: String
 )
+object GoogleAuthConfig {
+  private val defaultMaxAuthAge = None
+  private val defaultEnforceValidity = true
+  private val defaultPrompt = None
+  private val defaultAntiForgeryKey = "antiForgeryToken"
+
+  def apply(
+    clientId: String,
+    clientSecret: String,
+    redirectUrl: String,
+    domain: String,
+    maxAuthAge: Option[Duration] = defaultMaxAuthAge,
+    enforceValidity: Boolean = defaultEnforceValidity,
+    prompt: Option[String] = defaultPrompt,
+    antiForgeryKey: String = defaultAntiForgeryKey
+  ): GoogleAuthConfig = GoogleAuthConfig(clientId, clientSecret, redirectUrl, Some(domain), maxAuthAge, enforceValidity, prompt, antiForgeryKey)
+
+  /**
+    * Creates a GoogleAuthConfig that does not restrict acceptable email domains.
+    * This means any Google account can be used to gain access. If you mean to restrict
+    * access to certain email domains use the `apply` method instead.
+    */
+  def withNoDomainRestriction(
+    clientId: String,
+    clientSecret: String,
+    redirectUrl: String,
+    maxAuthAge: Option[Duration] = defaultMaxAuthAge,
+    enforceValidity: Boolean = defaultEnforceValidity,
+    prompt: Option[String] = defaultPrompt,
+    antiForgeryKey: String = defaultAntiForgeryKey
+  ): GoogleAuthConfig = GoogleAuthConfig(clientId, clientSecret, redirectUrl, None, maxAuthAge, enforceValidity, prompt, antiForgeryKey)
+}
 
 class GoogleAuthException(val message: String, val throwable: Throwable = null) extends Exception(message, throwable)
 
