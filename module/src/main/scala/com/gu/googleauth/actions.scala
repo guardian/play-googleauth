@@ -1,6 +1,6 @@
 package com.gu.googleauth
 
-import cats.data.{Xor, XorT}
+import cats.data.EitherT
 import cats.instances.future._
 import cats.syntax.applicativeError._
 import play.api.libs.json.{Format, JsValue, Json}
@@ -92,7 +92,7 @@ trait Actions extends UserIdentifier {
   /**
     * Extracts user from Google response and validates it, redirecting to `failureRedirectTarget` if the check fails.
     */
-  def checkIdentity()(implicit request: RequestHeader): XorT[Future, Result, UserIdentity] = {
+  def checkIdentity()(implicit request: RequestHeader): EitherT[Future, Result, UserIdentity] = {
     request.session.get(authConfig.antiForgeryKey) match {
       case Some(token) =>
         GoogleAuth.validatedUserIdentity(authConfig, token).attemptT.leftMap {
@@ -108,11 +108,8 @@ trait Actions extends UserIdentifier {
         }
       case None =>
         Logger.warn("Login failure, anti-forgery token missing")
-        XorT.left[Future, Result, UserIdentity] {
-          Future.successful {
-            redirectWithError(failureRedirectTarget, "Login failure, anti-forgery token missing", authConfig.antiForgeryKey, request.session)
-          }
-        }
+        val redirect = redirectWithError(failureRedirectTarget, "Login failure, anti-forgery token missing", authConfig.antiForgeryKey, request.session)
+        EitherT.fromEither(Left(redirect))
     }
   }
 
@@ -121,18 +118,18 @@ trait Actions extends UserIdentifier {
     * `failureRedirectTarget` if the user is not a member of any required group.
     */
   def enforceGoogleGroups(userIdentity: UserIdentity, requiredGoogleGroups: Set[String], googleGroupChecker: GoogleGroupChecker, errorMessage: String = "Login failure. You do not belong to the required Google groups")
-                         (implicit request: RequestHeader): XorT[Future, Result, Unit] = {
+                         (implicit request: RequestHeader): EitherT[Future, Result, Unit] = {
     googleGroupChecker.retrieveGroupsFor(userIdentity.email).attemptT
       .leftMap { t =>
         Logger.warn("Login failure, Could not look up user's Google groups", t)
         redirectWithError(failureRedirectTarget, "Login failure. Unable to look up Google Group membership", authConfig.antiForgeryKey, request.session)
       }
-      .map { userGroups =>
+      .subflatMap { userGroups =>
         if (Actions.checkGoogleGroups(userGroups, requiredGoogleGroups)) {
-          Xor.right(())
+          Right(())
         } else {
           Logger.info("Login failure, user not in required Google groups")
-          Xor.left(redirectWithError(failureRedirectTarget, errorMessage, authConfig.antiForgeryKey, request.session))
+          Left(redirectWithError(failureRedirectTarget, errorMessage, authConfig.antiForgeryKey, request.session))
         }
       }
   }
