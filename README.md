@@ -81,7 +81,7 @@ You will then need to contact the administrator of your organisation's Google Ap
 They will need to do so by adding specific [scopes](https://developers.google.com/admin-sdk/directory/v1/guides/authorizing) to the service account.
 This is done by granting the *clientId* of the service account with access to the required API scopes.
 
-In order to find out which groups the users of your domain belong to, the only scope you will need is *https://www.googleapis.com/auth/admin.directory.user.readonly*
+In order to find out which groups the users of your domain belong to, the only scope you will need is *https://www.googleapis.com/auth/admin.directory.group.readonly*
 
 Finally, you need the email address of a user who has the permission to access the Admin APIs.
 It is not enough to be able to authenticate to your domain with a client ID and private key, you also need to specify the email address of one of the organisation's admin users.
