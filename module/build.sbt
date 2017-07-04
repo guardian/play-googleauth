@@ -5,7 +5,9 @@ name               := "play-googleauth"
 
 organization       := "com.gu"
 
-scalaVersion       := "2.11.8"
+scalaVersion       := "2.12.2"
+
+crossScalaVersions := Seq("2.12.2", "2.11.11")
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
@@ -15,7 +17,7 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core" % "0.8.1",
   commonsCodec,
   googleDataAPI,
-  "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 ) ++ googleDirectoryAPI
 
 scalacOptions ++= Seq("-feature", "-deprecation")

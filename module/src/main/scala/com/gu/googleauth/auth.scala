@@ -9,7 +9,6 @@ import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{RequestHeader, Result}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
@@ -139,7 +138,7 @@ object GoogleAuth {
                   throw new GoogleAuthException("Configured Google domain does not match")
               }
               ws.url(dd.userinfo_endpoint)
-                .withHeaders("Authorization" -> s"Bearer ${token.access_token}")
+                .withHttpHeaders("Authorization" -> s"Bearer ${token.access_token}")
                 .get().map { response =>
                   googleResponse(response) { json =>
                       val userInfo = UserInfo.fromJson(json)
