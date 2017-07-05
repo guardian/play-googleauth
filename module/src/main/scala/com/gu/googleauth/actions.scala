@@ -123,7 +123,7 @@ trait LoginSupport {
   /**
     * Extracts user from Google response and validates it, redirecting to `failureRedirectTarget` if the check fails.
     */
-  private def checkIdentity()(implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, UserIdentity] = {
+  def checkIdentity()(implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, UserIdentity] = {
     request.session.get(authConfig.antiForgeryKey) match {
       case Some(token) =>
         GoogleAuth.validatedUserIdentity(authConfig, token).attemptT.leftMap {
@@ -191,7 +191,7 @@ trait LoginSupport {
     }).merge
   }
 
-  private def redirectWithError(target: Call, message: String, antiForgeryKey: String, session: Session): Result = {
+  def redirectWithError(target: Call, message: String, antiForgeryKey: String, session: Session): Result = {
     Redirect(target)
       .withSession(session - antiForgeryKey)
       .flashing("error" -> s"Login failure. $message")
@@ -200,7 +200,7 @@ trait LoginSupport {
   /**
     * Redirects user with configured play-googleauth session.
     */
-  private def setupSessionWhenSuccessful(userIdentity: UserIdentity)(implicit request: RequestHeader): Result = {
+  def setupSessionWhenSuccessful(userIdentity: UserIdentity)(implicit request: RequestHeader): Result = {
     val redirect = request.session.get(GoogleAuthFilters.LOGIN_ORIGIN_KEY) match {
       case Some(url) => Redirect(url)
       case None => Redirect(defaultRedirectTarget)

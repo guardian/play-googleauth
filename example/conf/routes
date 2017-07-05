@@ -1,6 +1,6 @@
 GET        /                      controllers.Application.index
 GET        /authenticated         controllers.Application.authenticated
-GET        /authenticatedGroup    controllers.Application.authenticatedAndInGroup
+#GET        /authenticatedGroup    controllers.Application.authenticatedAndInGroup
 
 GET        /login                 controllers.Login.login
 GET        /loginAction           controllers.Login.loginAction

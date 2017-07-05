@@ -14,10 +14,10 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 libraryDependencies ++= Seq(
   play % "provided",
   playWS % "provided",
-  "org.typelevel" %% "cats-core" % "0.8.1",
+  "org.typelevel" %% "cats-core" % "0.9.0",
   commonsCodec,
   googleDataAPI,
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.3" % "test"
 ) ++ googleDirectoryAPI
 
 scalacOptions ++= Seq("-feature", "-deprecation")
