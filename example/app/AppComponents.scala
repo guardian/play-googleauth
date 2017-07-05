@@ -12,11 +12,11 @@ class AppComponents(context: ApplicationLoader.Context)
   with AhcWSComponents
   with HttpFiltersComponents{
 
-  lazy val clientId: String = configuration.get[String]("your.clientId.config.path")
-  lazy val clientSecret: String = configuration.get[String]("your.clientSecret.config.path")
-  lazy val redirectUrl: String = configuration.get[String]("your.redirectUrl.config.path")
-  lazy val domain: String = configuration.get[String]("your.apps-domain.config.path")
-  lazy val googleAuthConfig = GoogleAuthConfig(clientId, clientSecret, redirectUrl, domain)
+  val clientId: String = configuration.get[String]("your.clientId.config.path")
+  val clientSecret: String = configuration.get[String]("your.clientSecret.config.path")
+  val redirectUrl: String = configuration.get[String]("your.redirectUrl.config.path")
+  val domain: String = configuration.get[String]("your.apps-domain.config.path")
+  val googleAuthConfig = GoogleAuthConfig(clientId, clientSecret, redirectUrl, domain)
 
   val authAction = new AuthAction[AnyContent](googleAuthConfig, routes.Login.loginAction())(
     controllerComponents.parsers.default, executionContext)
