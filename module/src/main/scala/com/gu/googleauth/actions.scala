@@ -69,8 +69,6 @@ class AuthAction[A](val authConfig: GoogleAuthConfig, loginTarget: Call)
     with ActionRefiner[Request, AuthAction.UserIdentityRequest]
     with UserIdentifier {
 
-
-
   override protected def refine[A](request: Request[A]): Future[Either[Result, AuthAction.UserIdentityRequest[A]]] =
     Future.successful(
       userIdentity(request)
