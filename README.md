@@ -12,7 +12,7 @@ For Play 2.6.x use version [![Maven Central](https://maven-badges.herokuapp.com/
 ```
 libraryDependencies += "com.gu" %% "play-googleauth" % "0.7.0"
 ```
-This version has a dependancy on `cats 0.9.*`. Therefore, (for compatibility) it is advised your project or any of its dependendencies do not depend on `cats 0.7.*` or below.
+This version has a dependency on `cats 0.9.*`. Therefore, (for compatibility) it is advised your project or any of its dependendencies do not depend on `cats 0.7.*` or below.
 
 For Play 2.5.x use version 0.6.x (`play-2.5.x` branch)
 ```
