@@ -63,8 +63,7 @@ object AuthAction {
   * @param authConfig
   * @param loginTarget The target that should be redirected to in order to carry out authentication
   */
-class AuthAction[A](val authConfig: GoogleAuthConfig, loginTarget: Call)
-  (implicit bodyParser: BodyParser[A], val executionContext: ExecutionContext)
+class AuthAction[A](val authConfig: GoogleAuthConfig, loginTarget: Call, bodyParser: BodyParser[A], val executionContext: ExecutionContext)
   extends ActionBuilder[AuthAction.UserIdentityRequest, A]
     with ActionRefiner[Request, AuthAction.UserIdentityRequest]
     with UserIdentifier {
@@ -73,7 +72,7 @@ class AuthAction[A](val authConfig: GoogleAuthConfig, loginTarget: Call)
     Future.successful(
       userIdentity(request)
         .map(userID => new AuthenticatedRequest(userID, request))
-        .toRight(sendForAuth(request))
+        .toRight(sendForAuth(request)(executionContext))
     )
 
   /**

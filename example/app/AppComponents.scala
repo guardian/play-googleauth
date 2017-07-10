@@ -25,8 +25,7 @@ class AppComponents(context: ApplicationLoader.Context)
   val googleCredential = GoogleCredential.fromStream(new FileInputStream(googleCredentialLocation))
   val googleServiceAccount = GoogleServiceAccount(googleCredential.getServiceAccountId, googleCredential.getServiceAccountPrivateKey, "service.account@mydomain.com")
 
-  val authAction = new AuthAction[AnyContent](googleAuthConfig, routes.Login.loginAction())(
-    controllerComponents.parsers.default, executionContext)
+  val authAction = new AuthAction[AnyContent](googleAuthConfig, routes.Login.loginAction(), controllerComponents.parsers.default, executionContext)
 
   val login = new Login(wsClient, googleAuthConfig, googleServiceAccount, controllerComponents)(executionContext)
   val appController = new Application(authAction, controllerComponents)
