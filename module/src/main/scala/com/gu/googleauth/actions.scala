@@ -3,17 +3,15 @@ package com.gu.googleauth
 import cats.data.EitherT
 import cats.instances.future._
 import cats.syntax.applicativeError._
-import play.api.libs.json.{Format, JsValue, Json}
 import play.api.Logger
+import play.api.libs.json.{Format, JsValue, Json}
 import play.api.libs.ws.WSClient
 import play.api.mvc.Results._
-import play.api.mvc.Security.{AuthenticatedBuilder, AuthenticatedRequest}
+import play.api.mvc.Security.AuthenticatedRequest
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.higherKinds
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.language.postfixOps
+import scala.language.{higherKinds, postfixOps}
 
 
 case class UserIdentity(sub: String, email: String, firstName: String, lastName: String, exp: Long, avatarUrl: Option[String]) {
@@ -52,13 +50,51 @@ trait UserIdentifier {
     UserIdentity.fromRequest(request).filter(_.isValid || !authConfig.enforceValidity)
 }
 
-trait Actions extends UserIdentifier {
+object AuthAction {
+  type UserIdentityRequest[A] = AuthenticatedRequest[A, UserIdentity]
+}
+
+/**
+  * This action ensures that the user is authenticated and their token is valid. Is a user is not logged in or their
+  * token has expired then they will be authenticated.
+  *
+  * The AuthenticatedRequest will always have an identity.
+  *
+  * @param authConfig
+  * @param loginTarget The target that should be redirected to in order to carry out authentication
+  */
+class AuthAction[A](val authConfig: GoogleAuthConfig, loginTarget: Call, bodyParser: BodyParser[A])(implicit val executionContext: ExecutionContext)
+  extends ActionBuilder[AuthAction.UserIdentityRequest, A]
+    with ActionRefiner[Request, AuthAction.UserIdentityRequest]
+    with UserIdentifier {
+
+  override protected def refine[A](request: Request[A]): Future[Either[Result, AuthAction.UserIdentityRequest[A]]] =
+    Future.successful(
+      userIdentity(request)
+        .map(userID => new AuthenticatedRequest(userID, request))
+        .toRight(sendForAuth(request)(executionContext))
+    )
+
+  /**
+    * Helper method that deals with sending a client for authentication. Typically this should store the target URL and
+    * redirect to the loginTarget. There shouldn't really be any need to override this.
+    */
+  def sendForAuth[A](request: RequestHeader)(implicit ec: ExecutionContext) =
+    Redirect(loginTarget).withSession {
+      request.session + (GoogleAuthFilters.LOGIN_ORIGIN_KEY, request.uri)
+    }
+
+  override def parser: BodyParser[A] = bodyParser
+}
+
+trait LoginSupport {
   implicit def wsClient: WSClient
 
   /**
-    * The target that should be redirected to in order to carry out authentication
+    * The configuration to use for these actions
     */
-  def loginTarget: Call
+  def authConfig: GoogleAuthConfig
+
 
   /**
     * The target that should be redirected to if login fails
@@ -70,19 +106,11 @@ trait Actions extends UserIdentifier {
     */
   val defaultRedirectTarget: Call
 
-  /**
-    * Helper method that deals with sending a client for authentication. Typically this should store the target URL and
-    * redirect to the loginTarget. There shouldn't really be any need to override this.
-    */
-  def sendForAuth[A](request: RequestHeader) =
-    Redirect(loginTarget).withSession {
-      request.session + (GoogleAuthFilters.LOGIN_ORIGIN_KEY, request.uri)
-    }
 
   /**
     * Redirects user to Google to start the login.
     */
-  def startGoogleLogin()(implicit request: RequestHeader): Future[Result] = {
+  def startGoogleLogin()(implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
     val antiForgeryToken = GoogleAuth.generateAntiForgeryToken()
     GoogleAuth.redirectToGoogle(authConfig, antiForgeryToken).map {
       _.withSession { request.session + (authConfig.antiForgeryKey -> antiForgeryToken) }
@@ -92,7 +120,7 @@ trait Actions extends UserIdentifier {
   /**
     * Extracts user from Google response and validates it, redirecting to `failureRedirectTarget` if the check fails.
     */
-  def checkIdentity()(implicit request: RequestHeader): EitherT[Future, Result, UserIdentity] = {
+  def checkIdentity()(implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, UserIdentity] = {
     request.session.get(authConfig.antiForgeryKey) match {
       case Some(token) =>
         GoogleAuth.validatedUserIdentity(authConfig, token).attemptT.leftMap {
@@ -118,7 +146,7 @@ trait Actions extends UserIdentifier {
     * `failureRedirectTarget` if the user is not a member of any required group.
     */
   def enforceGoogleGroups(userIdentity: UserIdentity, requiredGoogleGroups: Set[String], googleGroupChecker: GoogleGroupChecker, errorMessage: String = "Login failure. You do not belong to the required Google groups")
-                         (implicit request: RequestHeader): EitherT[Future, Result, Unit] = {
+                         (implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, Unit] = {
     googleGroupChecker.retrieveGroupsFor(userIdentity.email).attemptT
       .leftMap { t =>
         Logger.warn("Login failure, Could not look up user's Google groups", t)
@@ -137,7 +165,7 @@ trait Actions extends UserIdentifier {
   /**
     * Handle the OAuth2 callback, which logs the user in and redirects them appropriately.
     */
-  def processOauth2Callback()(implicit request: RequestHeader): Future[Result] = {
+  def processOauth2Callback()(implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
     (for {
       identity <- checkIdentity()
     } yield {
@@ -150,7 +178,8 @@ trait Actions extends UserIdentifier {
     *
     * Also ensures the user belongs to the (provided) required Google Groups.
     */
-  def processOauth2Callback(requiredGoogleGroups: Set[String], groupChecker: GoogleGroupChecker)(implicit request: RequestHeader): Future[Result] = {
+  def processOauth2Callback(requiredGoogleGroups: Set[String], groupChecker: GoogleGroupChecker)
+    (implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
     (for {
       identity <- checkIdentity()
       _ <- enforceGoogleGroups(identity, requiredGoogleGroups, groupChecker)
@@ -159,7 +188,7 @@ trait Actions extends UserIdentifier {
     }).merge
   }
 
-  private def redirectWithError(target: Call, message: String, antiForgeryKey: String, session: Session): Result = {
+  def redirectWithError(target: Call, message: String, antiForgeryKey: String, session: Session): Result = {
     Redirect(target)
       .withSession(session - antiForgeryKey)
       .flashing("error" -> s"Login failure. $message")
@@ -178,14 +207,6 @@ trait Actions extends UserIdentifier {
       request.session + (UserIdentity.KEY -> Json.toJson(userIdentity).toString) - authConfig.antiForgeryKey - GoogleAuthFilters.LOGIN_ORIGIN_KEY
     }
   }
-
-  /**
-   * This action ensures that the user is authenticated and their token is valid. Is a user is not logged in or their
-   * token has expired then they will be authenticated.
-   *
-   * The AuthenticatedRequest will always have an identity.
-   */
-  object AuthAction extends AuthenticatedBuilder(r => userIdentity(r), r => sendForAuth(r))
 }
 
 object Actions {
@@ -209,11 +230,14 @@ trait Filters extends UserIdentifier {
     notInValidGroup: R[_] => Result = (_: R[_])  => Forbidden
   )(implicit ec: ExecutionContext) = new ActionFilter[R] {
 
-    protected def filter[A](request: R[A]) = userIdentity(request).fold[Future[Option[Result]]](Future.successful(Some(notInValidGroup(request)))) {
-      user => for (usersGroups <- groupChecker.retrieveGroupsFor(user.email)) yield if (includedGroups.intersect(usersGroups).nonEmpty) None else {
-        Logger.info(s"Excluding ${user.email} from '${request.path}' - not in accepted groups: $includedGroups")
-        Some(notInValidGroup(request))
+    override protected def executionContext: ExecutionContext = ec
+
+    protected def filter[A](request: R[A]): Future[Option[Result]] =
+      userIdentity(request: RequestHeader).fold[Future[Option[Result]]](Future.successful(Some(notInValidGroup(request)))) {
+        user => for (usersGroups <- groupChecker.retrieveGroupsFor(user.email)) yield if (includedGroups.intersect(usersGroups).nonEmpty) None else {
+          Logger.info(s"Excluding ${user.email} from '${request.path}' - not in accepted groups: $includedGroups")
+          Some(notInValidGroup(request))
+        }
       }
-    }
   }
 }

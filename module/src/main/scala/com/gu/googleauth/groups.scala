@@ -7,7 +7,7 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.admin.directory.{Directory, DirectoryScopes}
 
-import scala.collection.convert.wrapAll._
+import scala.collection.JavaConverters._
 import scala.concurrent._
 
 /**
@@ -50,7 +50,7 @@ class GoogleGroupChecker(directoryServiceAccount: GoogleServiceAccount) {
       .setServiceAccountId(directoryServiceAccount.email)
       .setServiceAccountUser(directoryServiceAccount.impersonatedUser)
       .setServiceAccountPrivateKey(directoryServiceAccount.privateKey)
-      .setServiceAccountScopes(Seq(DirectoryScopes.ADMIN_DIRECTORY_GROUP_READONLY))
+      .setServiceAccountScopes(Seq(DirectoryScopes.ADMIN_DIRECTORY_GROUP_READONLY).asJava)
       .build()
 
     new Directory.Builder(transport, jsonFactory, null).setHttpRequestInitializer(credential).build
@@ -58,6 +58,6 @@ class GoogleGroupChecker(directoryServiceAccount: GoogleServiceAccount) {
 
   def retrieveGroupsFor(userEmail: String)(implicit ec: ExecutionContext): Future[Set[String]] = for {
     resp <- Future { blocking { directoryService.groups.list.setUserKey(userEmail).execute() } }
-  } yield resp.getGroups.map(_.getEmail).toSet
+  } yield resp.getGroups.asScala.map(_.getEmail).toSet
   
 }

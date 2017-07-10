@@ -8,11 +8,16 @@ It can also be used to get information about the groups of your Google Apps Doma
 Versions
 --------
 
-For Play 2.5.x use version [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11):
+For Play 2.6.x use version [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11):
+```
+libraryDependencies += "com.gu" %% "play-googleauth" % "0.7.0"
+```
+This version has a dependency on `cats 0.9.*`. Therefore, (for compatibility) it is advised your project or any of its dependendencies do not depend on `cats 0.7.*` or below.
+
+For Play 2.5.x use version 0.6.x (`play-2.5.x` branch)
 ```
 libraryDependencies += "com.gu" %% "play-googleauth" % "0.6.0"
 ```
-This version has a dependancy on `cats 0.8.*`. Therefore, (for compatibility) it is advised your project or any of its dependendancies do not depend on `cats 0.7.*` or below.
 
 For Play 2.4.x use version 0.3.x (`play-2.4.x` branch)
 ```
