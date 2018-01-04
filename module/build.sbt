@@ -17,6 +17,7 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core" % "1.0.1",
   commonsCodec,
   googleDataAPI,
+  playTest % "test",
   "org.scalatest" %% "scalatest" % "3.0.3" % "test"
 ) ++ googleDirectoryAPI
 

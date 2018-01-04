@@ -111,9 +111,8 @@ trait LoginSupport {
     * Redirects user to Google to start the login.
     */
   def startGoogleLogin()(implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
-    val antiForgeryToken = GoogleAuth.generateAntiForgeryToken()
-    GoogleAuth.redirectToGoogle(authConfig, antiForgeryToken).map {
-      _.withSession { request.session + (authConfig.antiForgeryKey -> antiForgeryToken) }
+    authConfig.antiForgeryChecker.ensureUserHasSessionId { sessionId =>
+      GoogleAuth.redirectToGoogle(authConfig, sessionId)
     }
   }
 
@@ -121,24 +120,17 @@ trait LoginSupport {
     * Extracts user from Google response and validates it, redirecting to `failureRedirectTarget` if the check fails.
     */
   def checkIdentity()(implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, UserIdentity] = {
-    request.session.get(authConfig.antiForgeryKey) match {
-      case Some(token) =>
-        GoogleAuth.validatedUserIdentity(authConfig, token).attemptT.leftMap {
+        GoogleAuth.validatedUserIdentity(authConfig).attemptT.leftMap {
           case e: IllegalArgumentException =>
             Logger.warn("Login failure, anti-forgery token", e)
-            redirectWithError(failureRedirectTarget, "Login failure, anti-forgery token did not match", authConfig.antiForgeryKey, request.session)
+            redirectWithError(failureRedirectTarget, "The anti forgery token is not valid")
           case e: GoogleAuthException =>
             Logger.warn("Login failure, GoogleAuthException", e)
-            redirectWithError(failureRedirectTarget, e.getMessage, authConfig.antiForgeryKey, request.session)
+            redirectWithError(failureRedirectTarget, e.getMessage)
           case e: Throwable =>
             Logger.warn("Login failure", e)
-            redirectWithError(failureRedirectTarget, e.getMessage, authConfig.antiForgeryKey, request.session)
+            redirectWithError(failureRedirectTarget, e.getMessage)
         }
-      case None =>
-        Logger.warn("Login failure, anti-forgery token missing")
-        val redirect = redirectWithError(failureRedirectTarget, "Login failure, anti-forgery token missing", authConfig.antiForgeryKey, request.session)
-        EitherT.fromEither(Left(redirect))
-    }
   }
 
   /**
@@ -150,14 +142,14 @@ trait LoginSupport {
     googleGroupChecker.retrieveGroupsFor(userIdentity.email).attemptT
       .leftMap { t =>
         Logger.warn("Login failure, Could not look up user's Google groups", t)
-        redirectWithError(failureRedirectTarget, "Login failure. Unable to look up Google Group membership", authConfig.antiForgeryKey, request.session)
+        redirectWithError(failureRedirectTarget, "Login failure. Unable to look up Google Group membership")
       }
       .subflatMap { userGroups =>
         if (Actions.checkGoogleGroups(userGroups, requiredGoogleGroups)) {
           Right(())
         } else {
           Logger.info("Login failure, user not in required Google groups")
-          Left(redirectWithError(failureRedirectTarget, errorMessage, authConfig.antiForgeryKey, request.session))
+          Left(redirectWithError(failureRedirectTarget, errorMessage))
         }
       }
   }
@@ -188,11 +180,8 @@ trait LoginSupport {
     }).merge
   }
 
-  def redirectWithError(target: Call, message: String, antiForgeryKey: String, session: Session): Result = {
-    Redirect(target)
-      .withSession(session - antiForgeryKey)
-      .flashing("error" -> s"Login failure. $message")
-  }
+  def redirectWithError(target: Call, message: String): Result =
+    Redirect(target).flashing("error" -> s"Login failure. $message")
 
   /**
     * Redirects user with configured play-googleauth session.
@@ -204,7 +193,7 @@ trait LoginSupport {
     }
     // Store the JSON representation of the identity in the session - this is checked by AuthAction later
     redirect.withSession {
-      request.session + (UserIdentity.KEY -> Json.toJson(userIdentity).toString) - authConfig.antiForgeryKey - GoogleAuthFilters.LOGIN_ORIGIN_KEY
+      request.session + (UserIdentity.KEY -> Json.toJson(userIdentity).toString) - GoogleAuthFilters.LOGIN_ORIGIN_KEY
     }
   }
 }

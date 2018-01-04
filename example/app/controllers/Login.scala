@@ -20,7 +20,7 @@ class Login(requiredGoogleGroups: Set[String], val authConfig: GoogleAuthConfig,
   }
 
   /*
-   * Redirect to Google with anti forgery token (that we keep in session storage - note that flashing is NOT secure).
+   * Redirect to Google with a signed anti-forgery token in the OAuth 'state'
    */
   def loginAction = Action.async { implicit request =>
     startGoogleLogin()

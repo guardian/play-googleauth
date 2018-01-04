@@ -1,7 +1,7 @@
 import java.io.FileInputStream
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
-import com.gu.googleauth.{AuthAction, GoogleAuthConfig, GoogleGroupChecker, GoogleServiceAccount}
+import com.gu.googleauth._
 import controllers.{Application, Login, routes}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.AnyContent
@@ -17,11 +17,13 @@ class AppComponents(context: ApplicationLoader.Context)
   with AhcWSComponents
   with HttpFiltersComponents{
 
-  val clientId: String = configuration.get[String]("your.clientId.config.path")
-  val clientSecret: String = configuration.get[String]("your.clientSecret.config.path")
-  val redirectUrl: String = configuration.get[String]("your.redirectUrl.config.path")
-  val domain: String = configuration.get[String]("your.apps-domain.config.path")
-  val googleAuthConfig = GoogleAuthConfig(clientId, clientSecret, redirectUrl, domain)
+  val googleAuthConfig = GoogleAuthConfig(
+    clientId = configuration.get[String]("your.clientId.config.path"),
+    clientSecret = configuration.get[String]("your.clientSecret.config.path"),
+    redirectUrl = configuration.get[String]("your.redirectUrl.config.path"),
+    domain = configuration.get[String]("your.apps-domain.config.path"),
+    antiForgeryChecker = AntiForgeryChecker.borrowSettingsFromPlay(httpConfiguration)
+  )
 
   val googleCredentialLocation = configuration.get[String]("your.serviceAccountCert.path")
   val googleCredential = GoogleCredential.fromStream(new FileInputStream(googleCredentialLocation))
