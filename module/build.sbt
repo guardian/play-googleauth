@@ -14,7 +14,7 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 libraryDependencies ++= Seq(
   play % "provided",
   playWS % "provided",
-  "org.typelevel" %% "cats-core" % "0.9.0",
+  "org.typelevel" %% "cats-core" % "1.0.1",
   commonsCodec,
   googleDataAPI,
   "org.scalatest" %% "scalatest" % "3.0.3" % "test"
