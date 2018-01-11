@@ -29,6 +29,13 @@ scmInfo := Some(ScmInfo(
   "scm:git:git@github.com:guardian/play-googleauth.git"
 ))
 
+publishTo := Some(
+  if (isSnapshot.value)
+    Opts.resolver.sonatypeSnapshots
+  else
+    Opts.resolver.sonatypeStaging
+)
+
 pomExtra := {
   <url>https://github.com/guardian/play-googleauth</url>
   <developers>
