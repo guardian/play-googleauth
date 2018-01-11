@@ -18,6 +18,7 @@ object Dependencies {
 
   val play = "com.typesafe.play" %% "play" % playVersion
   val playWS = "com.typesafe.play" %% "play-ws" % playVersion
+  val playTest = "com.typesafe.play" %% "play-test" % playVersion
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.9"
 
