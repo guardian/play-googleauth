@@ -1,7 +1,5 @@
 name := "play-googleauth-example"
 
-version := "0.7.2-SNAPSHOT"
-
 scalaVersion := "2.12.2"
 
 libraryDependencies ++= Seq(
