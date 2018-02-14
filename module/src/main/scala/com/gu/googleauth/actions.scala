@@ -3,6 +3,7 @@ package com.gu.googleauth
 import cats.data.EitherT
 import cats.instances.future._
 import cats.syntax.applicativeError._
+import io.jsonwebtoken.ExpiredJwtException
 import play.api.Logger
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.libs.ws.WSClient
@@ -120,17 +121,24 @@ trait LoginSupport {
     * Extracts user from Google response and validates it, redirecting to `failureRedirectTarget` if the check fails.
     */
   def checkIdentity()(implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, UserIdentity] = {
-        GoogleAuth.validatedUserIdentity(authConfig).attemptT.leftMap {
-          case e: IllegalArgumentException =>
-            Logger.warn("Login failure, anti-forgery token", e)
-            redirectWithError(failureRedirectTarget, "The anti forgery token is not valid")
-          case e: GoogleAuthException =>
-            Logger.warn("Login failure, GoogleAuthException", e)
-            redirectWithError(failureRedirectTarget, e.getMessage)
-          case e: Throwable =>
-            Logger.warn("Login failure", e)
-            redirectWithError(failureRedirectTarget, e.getMessage)
-        }
+    def logWarn(desc:String, e: Throwable): Unit = {
+      Logger.warn(s"${getClass.getSimpleName} : failed-oauth-callback : $desc : '${e.getMessage}'", e)
+    }
+
+    GoogleAuth.validatedUserIdentity(authConfig).attemptT.leftSemiflatMap {
+      case expiredJwt: ExpiredJwtException =>
+        logWarn("resend-user-with-expired-anti-forgery-token-to-google", expiredJwt)
+        startGoogleLogin()
+      case e: IllegalArgumentException =>
+        logWarn("anti-forgery-token-invalid", e)
+        Future.successful(redirectWithError(failureRedirectTarget, "The anti forgery token is not valid"))
+      case e: GoogleAuthException =>
+        logWarn("GoogleAuthException", e)
+        Future.successful(redirectWithError(failureRedirectTarget, e.getMessage))
+      case e: Throwable =>
+        logWarn(e.getClass.getSimpleName, e)
+        Future.successful(redirectWithError(failureRedirectTarget, e.getMessage))
+    }
   }
 
   /**
