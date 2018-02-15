@@ -5,9 +5,9 @@ name               := "play-googleauth"
 
 organization       := "com.gu"
 
-scalaVersion       := "2.12.2"
+scalaVersion       := "2.12.4"
 
-crossScalaVersions := Seq("2.12.2", "2.11.11")
+crossScalaVersions := Seq(scalaVersion.value, "2.11.12")
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
@@ -32,12 +32,7 @@ scmInfo := Some(ScmInfo(
   "scm:git:git@github.com:guardian/play-googleauth.git"
 ))
 
-publishTo := Some(
-  if (isSnapshot.value)
-    Opts.resolver.sonatypeSnapshots
-  else
-    Opts.resolver.sonatypeStaging
-)
+publishTo := sonatypePublishTo.value
 
 pomExtra := {
   <url>https://github.com/guardian/play-googleauth</url>
