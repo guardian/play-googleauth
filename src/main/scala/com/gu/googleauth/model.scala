@@ -14,18 +14,23 @@ object DiscoveryDocument {
   )
 }
 
-case class Token(access_token:String, token_type:String, expires_in:Long, id_token:String) {
+/**
+  * Represents the Google's response to a request on the 'Token' endpoint
+  *
+  * Full format documented in https://developers.google.com/identity/protocols/OpenIDConnect#exchangecode
+  */
+case class TokenResponse(access_token:String, token_type:String, expires_in:Long, id_token:String) {
   val jwt = JsonWebToken(id_token)
 }
-object Token {
-  implicit val tokenReads: Reads[Token] = (
+object TokenResponse {
+  implicit val tokenReads: Reads[TokenResponse] = (
     (JsPath \ "access_token").read[String] and
       (JsPath \ "token_type").read[String] and
       (JsPath \ "expires_in").read[Long].orElse((JsPath \ "expires_in").read[String].map(_.toLong)) and
       (JsPath \ "id_token").read[String]
-    )(Token.apply _)
+    )(TokenResponse.apply _)
 
-  def fromJson(json:JsValue):Token = Json.fromJson[Token](json).get
+  def fromJson(json:JsValue):TokenResponse = Json.fromJson[TokenResponse](json).get
 }
 
 case class JwtClaims(iss: String, sub:String, azp: String, email: String, at_hash: String, email_verified: Boolean,

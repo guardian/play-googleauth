@@ -6,11 +6,13 @@ import java.security.SecureRandom
 import java.time.Clock
 import java.util.{Base64, Date}
 
-import com.gu.googleauth.AntiForgeryChecker._
 import com.gu.play.secretrotation.DualSecretTransition.InitialSecret
 import com.gu.play.secretrotation.SnapshotProvider
 import io.jsonwebtoken.SignatureAlgorithm.HS256
 import io.jsonwebtoken._
+import com.gu.googleauth.OAuthStateSecurityConfig._
+import com.gu.googleauth.GoogleAuthFilters.LOGIN_ORIGIN_KEY
+import io.jsonwebtoken.{Claims, Jws, Jwts, SignatureAlgorithm}
 import org.joda.time.Duration
 import play.api.http.{HttpConfiguration, SecretConfiguration}
 import play.api.libs.json.JsValue
@@ -42,7 +44,7 @@ case class GoogleAuthConfig private(
   maxAuthAge: Option[Duration],
   enforceValidity: Boolean,
   prompt: Option[String],
-  antiForgeryChecker: AntiForgeryChecker
+  antiForgeryChecker: OAuthStateSecurityConfig
 )
 object GoogleAuthConfig {
   private val defaultMaxAuthAge = None
@@ -57,7 +59,7 @@ object GoogleAuthConfig {
     maxAuthAge: Option[Duration] = defaultMaxAuthAge,
     enforceValidity: Boolean = defaultEnforceValidity,
     prompt: Option[String] = defaultPrompt,
-    antiForgeryChecker: AntiForgeryChecker
+    antiForgeryChecker: OAuthStateSecurityConfig
 
   ): GoogleAuthConfig = GoogleAuthConfig(clientId, clientSecret, redirectUrl, Some(domain), maxAuthAge, enforceValidity, prompt, antiForgeryChecker)
 
@@ -73,7 +75,7 @@ object GoogleAuthConfig {
     maxAuthAge: Option[Duration] = defaultMaxAuthAge,
     enforceValidity: Boolean = defaultEnforceValidity,
     prompt: Option[String] = defaultPrompt,
-    antiForgeryChecker: AntiForgeryChecker
+    antiForgeryChecker: OAuthStateSecurityConfig
   ): GoogleAuthConfig =
     GoogleAuthConfig(clientId, clientSecret, redirectUrl, None, maxAuthAge, enforceValidity, prompt, antiForgeryChecker)
 }
@@ -96,7 +98,7 @@ object GoogleAuthConfig {
   * @param signatureAlgorithm defaults to a sensible value, but you can consider using
   *                           [[AntiForgeryChecker#signatureAlgorithmFromPlay]]
   */
-case class AntiForgeryChecker(
+case class OAuthStateSecurityConfig(
   secretsProvider: SnapshotProvider,
   signatureAlgorithm: SignatureAlgorithm = HS256, // same default currently used by Play: https://github.com/playframework/playframework/blob/a39b208/framework/src/play/src/main/scala/play/api/http/HttpConfiguration.scala#L336
   sessionIdKeyName: String = "play-googleauth-session-id"
@@ -141,16 +143,14 @@ case class AntiForgeryChecker(
   }).getOrElse(Failure(new SignatureException("OAuth anti-forgery state doesn't have a valid signature")))
 }
 
-object AntiForgeryChecker {
-  private val random = new SecureRandom()
-  def generateSessionId() = new BigInteger(130, random).toString(32)
+object OAuthStateSecurityConfig {
 
   val SessionIdJWTClaimPropertyName = "rfp" // see https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-01#section-2
 
   @deprecated("You can use this method if you never rotate your Play Application secret, but that's not a good security practice.\n" +
     "Use https://github.com/guardian/play-secret-rotation and the vanilla `AntiForgeryChecker` constructor","0.7.7")
-  def borrowSettingsFromPlay(httpConfiguration: HttpConfiguration): AntiForgeryChecker =
-    AntiForgeryChecker(InitialSecret(httpConfiguration.secret), signatureAlgorithmFromPlay(httpConfiguration))
+  def borrowSettingsFromPlay(httpConfiguration: HttpConfiguration): OAuthStateSecurityConfig =
+    OAuthStateSecurityConfig(InitialSecret(httpConfiguration.secret), signatureAlgorithmFromPlay(httpConfiguration))
 
   /**
     * If you're happy using the Playframework, you're probably happy to use their choice of JWT
@@ -173,31 +173,20 @@ object GoogleAuth {
       discoveryDocumentFuture
     }
 
-  def googleResponse[T](r: WSResponse)(block: JsValue => T): T = {
-    r.status match {
-      case errorCode if errorCode >= 400 =>
-        // try to get error if google sent us an error doc
-        val error = (r.json \ "error").asOpt[Error]
-        error.map { e =>
-          throw new GoogleAuthException(s"Error when calling Google: ${e.message}")
-        }.getOrElse {
-          throw new GoogleAuthException(s"Unknown error when calling Google [status=$errorCode, body=${r.body}]")
-        }
-      case normal => block(r.json)
-    }
-  }
 
   def redirectToGoogle(config: GoogleAuthConfig, sessionId: String)
                       (implicit request: RequestHeader, context: ExecutionContext, ws: WSClient): Future[Result] = {
+    val oAuthStateEncoding: OAuthState.Encoding = ???
+    val oAuthState = OAuthState(sessionId, request.getQueryString(LOGIN_ORIGIN_KEY).get)
     val userIdentity = UserIdentity.fromRequest(request)
     val queryString: Map[String, Seq[String]] = Map(
       "client_id" -> Seq(config.clientId),
       "response_type" -> Seq("code"),
       "scope" -> Seq("openid email profile"),
       "redirect_uri" -> Seq(config.redirectUrl),
-      "state" -> Seq(config.antiForgeryChecker.generateToken(sessionId))) ++
+      "state" -> Seq(oAuthStateEncoding.stringify(oAuthState))) ++
       config.domain.map(domain => "hd" -> Seq(domain)) ++
-      config.maxAuthAge.map(age => "max_auth_age" -> Seq(s"${age.getStandardSeconds}")) ++
+      config.maxAuthAge.map(age => "max_auth_age" -> Seq(age.getStandardSeconds.toString)) ++
       config.prompt.map(prompt => "prompt" -> Seq(prompt)) ++
       userIdentity.map(_.email).map("login_hint" -> Seq(_))
 
@@ -206,42 +195,10 @@ object GoogleAuth {
 
   def validatedUserIdentity(config: GoogleAuthConfig)
         (implicit request: RequestHeader, context: ExecutionContext, ws: WSClient): Future[UserIdentity] = {
-
-    Future.fromTry(config.antiForgeryChecker.verifyToken(request)).flatMap(_ => discoveryDocument()).flatMap { dd =>
-      val code = request.queryString("code")
-      ws.url(dd.token_endpoint).post {
-        Map(
-          "code" -> code,
-          "client_id" -> Seq(config.clientId),
-          "client_secret" -> Seq(config.clientSecret),
-          "redirect_uri" -> Seq(config.redirectUrl),
-          "grant_type" -> Seq("authorization_code")
-        )
-      }.flatMap { response =>
-        googleResponse(response) { json =>
-          val token = Token.fromJson(json)
-          val jwt = token.jwt
-          config.domain foreach { domain =>
-            if (!jwt.claims.email.split("@").lastOption.contains(domain))
-              throw new GoogleAuthException("Configured Google domain does not match")
-          }
-          ws.url(dd.userinfo_endpoint)
-            .withHttpHeaders("Authorization" -> s"Bearer ${token.access_token}")
-            .get().map { response =>
-            googleResponse(response) { json =>
-              val userInfo = UserInfo.fromJson(json)
-              UserIdentity(
-                jwt.claims.sub,
-                jwt.claims.email,
-                userInfo.given_name,
-                userInfo.family_name,
-                jwt.claims.exp,
-                userInfo.picture
-              )
-            }
-          }
-        }
-      }
-    }
+    for {
+      dd <- discoveryDocument()
+      googleOAuthService = new GoogleOAuthService(???, dd)
+      userIdentity <- googleOAuthService.fetchUserIdentityForCode(request.getQueryString("code").get)
+    } yield userIdentity
   }
 }

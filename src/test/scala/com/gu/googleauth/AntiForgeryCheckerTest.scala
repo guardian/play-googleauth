@@ -15,29 +15,29 @@ import play.api.test.FakeRequest
 
 class AntiForgeryCheckerTest extends FlatSpec with Matchers with TryValues {
 
-  val ExampleSessionId = AntiForgeryChecker.generateSessionId()
+  val ExampleSessionId = OAuthStateSecurityConfig.generateSessionId()
 
-  val antiForgery = AntiForgeryChecker(InitialSecret(SecretConfiguration("reallySecret")), HS256)
+  val antiForgery = OAuthStateSecurityConfig(InitialSecret(SecretConfiguration("reallySecret")), HS256)
 
   "Anti Forgery" should "fail if token is signed with other algorithm, even if it has the same secret" in {
     val badAlgorithmAntiForgery = antiForgery.copy(signatureAlgorithm = HS384)
 
-      antiForgery.verifyToken(mockRequest(badAlgorithmAntiForgery.generateToken(ExampleSessionId), ExampleSessionId))
+      antiForgery.extractOAuthStateFrom(mockRequest(badAlgorithmAntiForgery.generateToken(ExampleSessionId), ExampleSessionId))
         .failure.exception should have message "the anti forgery token is not signed with HS256"
   }
 
   it should "fail if the Play session id is different to the token id" in {
-    val otherSessionId = AntiForgeryChecker.generateSessionId()
+    val otherSessionId = OAuthStateSecurityConfig.generateSessionId()
     val badSessionAntiForgery = antiForgery.generateToken(otherSessionId)
 
-    antiForgery.verifyToken(mockRequest(badSessionAntiForgery, ExampleSessionId))
+    antiForgery.extractOAuthStateFrom(mockRequest(badSessionAntiForgery, ExampleSessionId))
       .failure.exception should have message "the session ID found in the anti forgery token does not match the Play session ID"
   }
 
   it should "not allow the 'None' algorithm" in {
     val tokenSignedWithNoneAlgorithm = "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJuYmYiOjE1MTUxNTE3ODUsImV4cCI6MjA1MTYwOTI5MDAwMH0."
 
-    antiForgery.verifyToken(mockRequest(tokenSignedWithNoneAlgorithm, ExampleSessionId))
+    antiForgery.extractOAuthStateFrom(mockRequest(tokenSignedWithNoneAlgorithm, ExampleSessionId))
       .failure.exception shouldBe a [UnsupportedJwtException]
   }
 
@@ -45,20 +45,20 @@ class AntiForgeryCheckerTest extends FlatSpec with Matchers with TryValues {
     val clockOneHourBehindCurrentTime = Clock.offset(Clock.systemUTC(), Duration.ofHours(1).negated())
     val expiredToken = antiForgery.generateToken(ExampleSessionId)(clockOneHourBehindCurrentTime)
 
-    antiForgery.verifyToken(mockRequest(expiredToken, ExampleSessionId))
+    antiForgery.extractOAuthStateFrom(mockRequest(expiredToken, ExampleSessionId))
       .failure.exception shouldBe a [ExpiredJwtException]
   }
 
   it should "accept a valid token" in {
     val validToken = antiForgery.generateToken(ExampleSessionId)
 
-    antiForgery.verifyToken(mockRequest(validToken, ExampleSessionId)).isSuccess shouldBe true
+    antiForgery.extractOAuthStateFrom(mockRequest(validToken, ExampleSessionId)).isSuccess shouldBe true
   }
 
   it should "not accept a token missing a character" in {
     val tokenMissingCharacter = antiForgery.generateToken(ExampleSessionId).dropRight(1)
 
-      antiForgery.verifyToken(mockRequest(tokenMissingCharacter, ExampleSessionId))
+      antiForgery.extractOAuthStateFrom(mockRequest(tokenMissingCharacter, ExampleSessionId))
       .failure.exception shouldBe a [SignatureException]
   }
 

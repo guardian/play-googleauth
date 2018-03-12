@@ -1,10 +1,17 @@
 package com.gu.googleauth
 
+import akka.http.scaladsl.model.Uri
 import cats.data.EitherT
 import cats.instances.future._
 import cats.syntax.applicativeError._
-import io.jsonwebtoken.ExpiredJwtException
+import com.gu.googleauth.OAuthStateSecurityConfig.SessionIdJWTClaimPropertyName
+import com.gu.googleauth.GoogleAuthFilters.LOGIN_ORIGIN_KEY
+import com.gu.googleauth.SessionId.ensureUserHasSessionId
+import io.jsonwebtoken.{ExpiredJwtException, Jwts}
+import org.jose4j.jwa.AlgorithmConstraints
+import org.jose4j.jwa.AlgorithmConstraints.ConstraintType.WHITELIST
 import play.api.Logger
+import play.api.libs.json.Json.toJson
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.libs.ws.WSClient
 import play.api.mvc.Results._
@@ -13,13 +20,15 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.{higherKinds, postfixOps}
+import scala.util.Try
+import AuthAction._
 
 
 case class UserIdentity(sub: String, email: String, firstName: String, lastName: String, exp: Long, avatarUrl: Option[String]) {
   lazy val fullName = firstName + " " + lastName
   lazy val username = email.split("@").head
   lazy val emailDomain = email.split("@").last
-  lazy val asJson = Json.stringify(Json.toJson(this))
+  lazy val asJson = Json.stringify(toJson(this))
   lazy val isValid = System.currentTimeMillis < exp * 1000
 }
 
@@ -38,6 +47,15 @@ object AuthenticatedRequest {
   }
 }
 
+ // stored in the JWT claim - everything else is just anti-forgery verification
+
+
+
+case class OAuthConclusion(user: UserIdentity, returnUrl: String) {
+  def redirect(implicit req: RequestHeader) = Redirect(returnUrl).addingToSession(UserIdentity.KEY -> toJson(user).toString)
+
+}
+
 trait UserIdentifier {
   /**
     * The configuration to use for these actions
@@ -53,6 +71,13 @@ trait UserIdentifier {
 
 object AuthAction {
   type UserIdentityRequest[A] = AuthenticatedRequest[A, UserIdentity]
+
+  implicit class RichCall(call: Call) {
+    def withQueryParameter(keyValue: (String, String)): Call = {
+      val callUri = Uri(call.url)
+      call.copy(url = callUri.withQuery(keyValue +: callUri.query()).toString)
+    }
+  }
 }
 
 /**
@@ -80,12 +105,14 @@ class AuthAction[A](val authConfig: GoogleAuthConfig, loginTarget: Call, bodyPar
     * Helper method that deals with sending a client for authentication. Typically this should store the target URL and
     * redirect to the loginTarget. There shouldn't really be any need to override this.
     */
-  def sendForAuth[A](request: RequestHeader)(implicit ec: ExecutionContext) =
-    Redirect(loginTarget).withSession {
-      request.session + (GoogleAuthFilters.LOGIN_ORIGIN_KEY, request.uri)
-    }
+  def sendForAuth[A](request: RequestHeader)(implicit ec: ExecutionContext) = {
+    val de: Destination.Encryption = ???
+
+    Redirect(loginTarget.withQueryParameter(LOGIN_ORIGIN_KEY -> de.encrypt(request.uri)))
+  }
 
   override def parser: BodyParser[A] = bodyParser
+
 }
 
 trait LoginSupport {
@@ -111,10 +138,8 @@ trait LoginSupport {
   /**
     * Redirects user to Google to start the login.
     */
-  def startGoogleLogin()(implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
-    authConfig.antiForgeryChecker.ensureUserHasSessionId { sessionId =>
-      GoogleAuth.redirectToGoogle(authConfig, sessionId)
-    }
+  def startGoogleLogin()(implicit req: RequestHeader, ec: ExecutionContext): Future[Result] = ensureUserHasSessionId {
+    sessionId => GoogleAuth.redirectToGoogle(authConfig, sessionId)
   }
 
   /**
@@ -166,11 +191,17 @@ trait LoginSupport {
     * Handle the OAuth2 callback, which logs the user in and redirects them appropriately.
     */
   def processOauth2Callback()(implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
-    (for {
-      identity <- checkIdentity()
-    } yield {
-      setupSessionWhenSuccessful(identity)
-    }).merge
+    val oauthStateEncoding: OAuthState.Encoding = ???
+    val destinationEncryption: Destination.Encryption = ???
+
+    for {
+      oAuthState <- Future.fromTry(oauthStateEncoding.extractOAuthStateFrom(request.getQueryString("state").get))
+      _ <- oAuthState.checkSessionIdMatches(request.session)
+      userIdentity <- GoogleAuth.validatedUserIdentity(authConfig)
+    } yield OAuthConclusion(
+      user = userIdentity,
+      returnUrl = destinationEncryption.decrypt(oAuthState.encryptedReturnUrl)
+    ).redirect
   }
 
   /**
@@ -195,14 +226,12 @@ trait LoginSupport {
     * Redirects user with configured play-googleauth session.
     */
   def setupSessionWhenSuccessful(userIdentity: UserIdentity)(implicit request: RequestHeader): Result = {
-    val redirect = request.session.get(GoogleAuthFilters.LOGIN_ORIGIN_KEY) match {
+    val redirect = request.session.get(LOGIN_ORIGIN_KEY) match {
       case Some(url) => Redirect(url)
       case None => Redirect(defaultRedirectTarget)
     }
     // Store the JSON representation of the identity in the session - this is checked by AuthAction later
-    redirect.withSession {
-      request.session + (UserIdentity.KEY -> Json.toJson(userIdentity).toString) - GoogleAuthFilters.LOGIN_ORIGIN_KEY
-    }
+    redirect.addingToSession(UserIdentity.KEY -> toJson(userIdentity).toString)
   }
 }
 

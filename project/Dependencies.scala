@@ -11,14 +11,17 @@ object Dependencies {
 
   //versions
 
-  val playVersion = "2.6.17"
+  val playVersion = "2.6.19"
 
 
   //libraries
 
   val play = "com.typesafe.play" %% "play" % playVersion
   val playWS = "com.typesafe.play" %% "play-ws" % playVersion
+  val akkaHttpCore = "com.typesafe.akka" %% "akka-http-core" % "10.1.0"
   val playTest = "com.typesafe.play" %% "play-test" % playVersion
+
+  val jose4j = "org.bitbucket.b_c" % "jose4j" % "0.6.3"
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.9"
 

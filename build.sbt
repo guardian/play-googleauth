@@ -14,8 +14,10 @@ resolvers += Resolver.typesafeIvyRepo("releases")
 libraryDependencies ++= Seq(
   play % "provided",
   playWS % "provided",
+  akkaHttpCore,
   "com.gu.play-secret-rotation" %% "core" % "0.12",
   "org.typelevel" %% "cats-core" % "1.0.1",
+  jose4j,
   commonsCodec,
   playTest % "test",
   "org.scalatest" %% "scalatest" % "3.0.3" % "test"
