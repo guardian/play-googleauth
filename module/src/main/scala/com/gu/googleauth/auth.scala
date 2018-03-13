@@ -197,7 +197,7 @@ object GoogleAuth {
           "redirect_uri" -> Seq(config.redirectUrl),
           "grant_type" -> Seq("authorization_code")
         )
-      }.flatMap { response =>
+      }.map { response =>
         googleResponse(response) { json =>
           val token = Token.fromJson(json)
           val jwt = token.jwt
@@ -205,21 +205,15 @@ object GoogleAuth {
             if (!jwt.claims.email.split("@").lastOption.contains(domain))
               throw new GoogleAuthException("Configured Google domain does not match")
           }
-          ws.url(dd.userinfo_endpoint)
-            .withHttpHeaders("Authorization" -> s"Bearer ${token.access_token}")
-            .get().map { response =>
-            googleResponse(response) { json =>
-              val userInfo = UserInfo.fromJson(json)
-              UserIdentity(
-                jwt.claims.sub,
-                jwt.claims.email,
-                userInfo.given_name,
-                userInfo.family_name,
-                jwt.claims.exp,
-                userInfo.picture
-              )
-            }
-          }
+          val userInfo = UserInfo.fromJson(jwt.claimsJson)
+          UserIdentity(
+            jwt.claims.sub,
+            jwt.claims.email,
+            userInfo.given_name,
+            userInfo.family_name,
+            jwt.claims.exp,
+            userInfo.picture
+          )
         }
       }
     }

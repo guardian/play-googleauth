@@ -5,7 +5,7 @@ import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import org.apache.commons.codec.binary.Base64
 
-case class DiscoveryDocument(authorization_endpoint: String, token_endpoint: String, userinfo_endpoint: String)
+case class DiscoveryDocument(authorization_endpoint: String, token_endpoint: String)
 object DiscoveryDocument {
   val url = "https://accounts.google.com/.well-known/openid-configuration"
   implicit val discoveryDocumentReads = Json.reads[DiscoveryDocument]

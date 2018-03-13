@@ -14,7 +14,7 @@
         <h1>Authorised</h1>
         <p>This is an authorised page of the example application.</p>
         <p>It uses an AuthAction so will always have a user.</p>
-        <p>In this case the logged in user is <b>@request.user.username</b>.</p>
+        <p>In this case the logged in user is <b>@request.user.username</b> (@request.user.fullName).</p>
         @request.user.avatarUrl.map { avatarUrl =>
             <p><img class="avatar" src="@avatarUrl" alt="@request.user.firstName" /></p>
         }
