@@ -11,7 +11,7 @@ object Dependencies {
 
   //versions
 
-  val playVersion = "2.6.0"
+  val playVersion = "2.6.7"
 
 
   //libraries
@@ -32,7 +32,7 @@ object Dependencies {
     */
   val googleDirectoryAPI = Seq(
     "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev53-1.20.0" exclude("com.google.guava", "guava-jdk5"),
-    "com.google.guava" % "guava" % "19.0"
+    "com.google.guava" % "guava" % "25.0-jre"
   )
 
 }
