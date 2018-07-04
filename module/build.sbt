@@ -5,7 +5,7 @@ name               := "play-googleauth"
 
 organization       := "com.gu"
 
-scalaVersion       := "2.12.4"
+scalaVersion       := "2.12.6"
 
 crossScalaVersions := Seq(scalaVersion.value, "2.11.12")
 
@@ -16,7 +16,6 @@ libraryDependencies ++= Seq(
   playWS % "provided",
   "org.typelevel" %% "cats-core" % "1.0.1",
   commonsCodec,
-  googleDataAPI,
   playTest % "test",
   "org.scalatest" %% "scalatest" % "3.0.3" % "test"
 ) ++ googleDirectoryAPI
