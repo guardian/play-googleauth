@@ -7,9 +7,12 @@ import java.time.Clock
 import java.util.{Base64, Date}
 
 import com.gu.googleauth.AntiForgeryChecker._
-import io.jsonwebtoken.{Claims, Jws, Jwts, SignatureAlgorithm}
+import com.gu.play.secretrotation.DualSecretTransition.InitialSecret
+import com.gu.play.secretrotation.SnapshotProvider
+import io.jsonwebtoken.SignatureAlgorithm.HS256
+import io.jsonwebtoken._
 import org.joda.time.Duration
-import play.api.http.HttpConfiguration
+import play.api.http.{HttpConfiguration, SecretConfiguration}
 import play.api.libs.json.JsValue
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.mvc.Results.Redirect
@@ -88,15 +91,19 @@ object GoogleAuthConfig {
   *
   * The design here is partially based on a IETF draft for "Encoding claims in the OAuth 2 state parameter ...":
   * https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-01
+  *
+  * @param secretsProvider see https://github.com/guardian/play-secret-rotation
+  * @param signatureAlgorithm defaults to a sensible value, but you can consider using
+  *                           [[AntiForgeryChecker#signatureAlgorithmFromPlay]]
   */
 case class AntiForgeryChecker(
-  signingSecret: String,
-  signatureAlgorithm: SignatureAlgorithm,
+  secretsProvider: SnapshotProvider,
+  signatureAlgorithm: SignatureAlgorithm = HS256, // same default currently used by Play: https://github.com/playframework/playframework/blob/a39b208/framework/src/play/src/main/scala/play/api/http/HttpConfiguration.scala#L336
   sessionIdKeyName: String = "play-googleauth-session-id"
 ) {
 
-  private val base64EncodedSecret: String =
-    Base64.getEncoder.encodeToString(signingSecret.getBytes(UTF_8))
+  private def base64EncodedSecretFrom(sc: SecretConfiguration): String =
+    Base64.getEncoder.encodeToString(sc.secret.getBytes(UTF_8))
 
   def ensureUserHasSessionId(t: String => Future[Result])(implicit request: RequestHeader, ec: ExecutionContext):Future[Result] = {
     val sessionId = request.session.get(sessionIdKeyName).getOrElse(generateSessionId())
@@ -104,13 +111,11 @@ case class AntiForgeryChecker(
     t(sessionId).map(_.addingToSession(sessionIdKeyName -> sessionId))
   }
 
-  def generateToken(sessionId: String)(implicit clock: Clock = Clock.systemUTC) : String = {
-    Jwts.builder()
-      .setExpiration(Date.from(clock.instant().plusSeconds(60)))
-      .claim(SessionIdJWTClaimPropertyName, sessionId)
-      .signWith(signatureAlgorithm, base64EncodedSecret)
-      .compact()
-  }
+  def generateToken(sessionId: String)(implicit clock: Clock = Clock.systemUTC) : String = Jwts.builder()
+    .setExpiration(Date.from(clock.instant().plusSeconds(60)))
+    .claim(SessionIdJWTClaimPropertyName, sessionId)
+    .signWith(signatureAlgorithm, base64EncodedSecretFrom(secretsProvider.snapshot().secrets.active))
+    .compact()
 
   def checkChoiceOfSigningAlgorithm(claims: Jws[Claims]): Try[Unit] =
     if (claims.getHeader.getAlgorithm == signatureAlgorithm.getValue) Success(()) else
@@ -122,11 +127,18 @@ case class AntiForgeryChecker(
 
   def verifyToken(request: RequestHeader): Try[Unit] = for {
     sessionIdFromPlaySession <- Try(request.session.get(sessionIdKeyName).getOrElse(throw new IllegalArgumentException("No Play session ID found")))
-    oathAntiForgeryState <- Try(request.getQueryString("state").getOrElse(throw new IllegalArgumentException("No anti-forgery state returned in OAuth callback")))
-    jwtClaims <- Try(Jwts.parser().setSigningKey(base64EncodedSecret).parseClaimsJws(oathAntiForgeryState))
+    oauthAntiForgeryState <- Try(request.getQueryString("state").getOrElse(throw new IllegalArgumentException("No anti-forgery state returned in OAuth callback")))
+    jwtClaims <- parseJwtClaimsFrom(oauthAntiForgeryState)
     _ <- checkChoiceOfSigningAlgorithm(jwtClaims)
     _ <- checkTokenContainsCorrectSessionId(jwtClaims, sessionIdFromPlaySession)
   } yield ()
+
+  private def parseJwtClaimsFrom(oauthAntiForgeryState: String) = secretsProvider.snapshot().decode[Try[Jws[Claims]]]({
+    sc => Try(Jwts.parser().setSigningKey(base64EncodedSecretFrom(sc)).parseClaimsJws(oauthAntiForgeryState))
+  }, conclusiveDecode = {
+    case Failure(_: SignatureException) => false // signature doesn't match this secret, try a different one
+    case _ => true
+  }).getOrElse(Failure(new SignatureException("OAuth anti-forgery state doesn't have a valid signature")))
 }
 
 object AntiForgeryChecker {
@@ -135,9 +147,16 @@ object AntiForgeryChecker {
 
   val SessionIdJWTClaimPropertyName = "rfp" // see https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-01#section-2
 
-  def borrowSettingsFromPlay(httpConfiguration: HttpConfiguration): AntiForgeryChecker = {
-    AntiForgeryChecker(httpConfiguration.secret.secret, SignatureAlgorithm.forName(httpConfiguration.session.jwt.signatureAlgorithm))
-  }
+  @deprecated("This method doesn't handle rotating secrets, use the standard `AntiForgeryChecker` constructor","0.7.7")
+  def borrowSettingsFromPlay(httpConfiguration: HttpConfiguration): AntiForgeryChecker =
+    AntiForgeryChecker(InitialSecret(httpConfiguration.secret), signatureAlgorithmFromPlay(httpConfiguration))
+
+  /**
+    * If you're happy using the Playframework, you're probably happy to use their choice of JWT
+    * signature algorithm.
+    */
+  def signatureAlgorithmFromPlay(httpConfiguration: HttpConfiguration): SignatureAlgorithm =
+    SignatureAlgorithm.forName(httpConfiguration.session.jwt.signatureAlgorithm)
 }
 
 class GoogleAuthException(val message: String, val throwable: Throwable = null) extends Exception(message, throwable)
