@@ -1,0 +1,13 @@
+language: scala
+scala:
+   - 2.12.6
+
+jdk:
+  - oraclejdk8
+
+sudo: false
+cache:
+  directories:
+  - $HOME/.sbt
+  - $HOME/.ivy2
+script: sbt ++$TRAVIS_SCALA_VERSION test && sbt ++$TRAVIS_SCALA_VERSION scripted; result=$? ; find $HOME/.sbt -name "*.lock" -type f -delete ; find $HOME/.ivy2/cache -name "*[\[\]\(\)]*.properties" -type f -delete ; (exit $result)
