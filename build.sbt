@@ -14,6 +14,7 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 libraryDependencies ++= Seq(
   play % "provided",
   playWS % "provided",
+  "com.gu.play-secret-rotation" %% "core" % "0.10",
   "org.typelevel" %% "cats-core" % "1.0.1",
   commonsCodec,
   playTest % "test",
