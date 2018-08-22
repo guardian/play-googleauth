@@ -147,7 +147,8 @@ object AntiForgeryChecker {
 
   val SessionIdJWTClaimPropertyName = "rfp" // see https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-01#section-2
 
-  @deprecated("This method doesn't handle rotating secrets, use the standard `AntiForgeryChecker` constructor","0.7.7")
+  @deprecated("You can use this method if you never rotate your Play Application secret, but that's not a good security practice.\n" +
+    "Use https://github.com/guardian/play-secret-rotation and the vanilla `AntiForgeryChecker` constructor","0.7.7")
   def borrowSettingsFromPlay(httpConfiguration: HttpConfiguration): AntiForgeryChecker =
     AntiForgeryChecker(InitialSecret(httpConfiguration.secret), signatureAlgorithmFromPlay(httpConfiguration))
 
