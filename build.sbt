@@ -9,7 +9,7 @@ scalaVersion       := "2.12.6"
 
 crossScalaVersions := Seq(scalaVersion.value, "2.11.12")
 
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+resolvers += Resolver.typesafeIvyRepo("releases")
 
 libraryDependencies ++= Seq(
   play % "provided",
