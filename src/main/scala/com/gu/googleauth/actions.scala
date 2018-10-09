@@ -5,6 +5,7 @@ import cats.instances.future._
 import cats.syntax.applicativeError._
 import io.jsonwebtoken.ExpiredJwtException
 import play.api.Logger
+import play.api.http.HeaderNames.STRICT_TRANSPORT_SECURITY
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.libs.ws.WSClient
 import play.api.mvc.Results._
@@ -66,21 +67,28 @@ object AuthAction {
   */
 class AuthAction[A](val authConfig: GoogleAuthConfig, loginTarget: Call, bodyParser: BodyParser[A])(implicit val executionContext: ExecutionContext)
   extends ActionBuilder[AuthAction.UserIdentityRequest, A]
-    with ActionRefiner[Request, AuthAction.UserIdentityRequest]
     with UserIdentifier {
 
-  override protected def refine[A](request: Request[A]): Future[Either[Result, AuthAction.UserIdentityRequest[A]]] =
+  protected def refine[B](request: Request[B]): Future[Either[Result, AuthAction.UserIdentityRequest[B]]] =
     Future.successful(
       userIdentity(request)
         .map(userID => new AuthenticatedRequest(userID, request))
         .toRight(sendForAuth(request)(executionContext))
     )
 
+  def invokeBlock[B](request: Request[B], block: AuthAction.UserIdentityRequest[B] => Future[Result]): Future[Result] =
+    refine(request).flatMap(_.fold(Future.successful, block)).map(addMissingHSTSHeader)
+
+  def addMissingHSTSHeader(result: Result): Result =
+    if (authConfig.impliesEndUserHasHTTPSConnection && !result.header.headers.contains(STRICT_TRANSPORT_SECURITY)) {
+      result.withHeaders(STRICT_TRANSPORT_SECURITY -> "max-age=31536000")
+    } else result
+
   /**
     * Helper method that deals with sending a client for authentication. Typically this should store the target URL and
     * redirect to the loginTarget. There shouldn't really be any need to override this.
     */
-  def sendForAuth[A](request: RequestHeader)(implicit ec: ExecutionContext) =
+  def sendForAuth[B](request: RequestHeader)(implicit ec: ExecutionContext) =
     Redirect(loginTarget).withSession {
       request.session + (GoogleAuthFilters.LOGIN_ORIGIN_KEY, request.uri)
     }

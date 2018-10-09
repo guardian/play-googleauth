@@ -1,6 +1,7 @@
 package com.gu.googleauth
 
 import java.math.BigInteger
+import java.net.URI
 import java.nio.charset.StandardCharsets.UTF_8
 import java.security.SecureRandom
 import java.time.Clock
@@ -43,7 +44,9 @@ case class GoogleAuthConfig private(
   enforceValidity: Boolean,
   prompt: Option[String],
   antiForgeryChecker: AntiForgeryChecker
-)
+) {
+  val impliesEndUserHasHTTPSConnection: Boolean = new URI(redirectUrl).getScheme == "https"
+}
 object GoogleAuthConfig {
   private val defaultMaxAuthAge = None
   private val defaultEnforceValidity = true
