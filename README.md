@@ -20,7 +20,7 @@ method.
 
 For Play 2.6.x use version [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11):
 ```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.7.0"
+libraryDependencies += "com.gu" %% "play-googleauth" % "[maven version number]"
 ```
 
 **0.7.0:** This version has a dependency on `cats 0.9.0` so may not be compatible with projects depending on different versions of cats
