@@ -5,16 +5,16 @@ name               := "play-googleauth"
 
 organization       := "com.gu"
 
-scalaVersion       := "2.12.6"
+scalaVersion       := "2.12.8"
 
-crossScalaVersions := Seq(scalaVersion.value, "2.11.12")
+crossScalaVersions := Seq(scalaVersion.value)
 
 resolvers += Resolver.typesafeIvyRepo("releases")
 
 libraryDependencies ++= Seq(
   play % "provided",
   playWS % "provided",
-  "com.gu.play-secret-rotation" %% "core" % "0.12",
+  "com.gu.play-secret-rotation" %% "core" % "0.15",
   "org.typelevel" %% "cats-core" % "1.0.1",
   commonsCodec,
   playTest % "test",

@@ -17,7 +17,7 @@ class AntiForgeryCheckerTest extends FlatSpec with Matchers with TryValues {
 
   val ExampleSessionId = AntiForgeryChecker.generateSessionId()
 
-  val antiForgery = AntiForgeryChecker(InitialSecret(SecretConfiguration("reallySecret")), HS256)
+  val antiForgery = AntiForgeryChecker(InitialSecret("reallySecret"), HS256)
 
   "Anti Forgery" should "fail if token is signed with other algorithm, even if it has the same secret" in {
     val badAlgorithmAntiForgery = antiForgery.copy(signatureAlgorithm = HS384)
@@ -65,7 +65,7 @@ class AntiForgeryCheckerTest extends FlatSpec with Matchers with TryValues {
   it should "accept a token signed with any of the accepted secrets" in {
     val overlapInterval = Interval.of(Instant.now().minusSeconds(50), ofSeconds(100))
     val checkerAcceptingMultipleSecrets = AntiForgeryChecker(
-      TransitioningSecret(SecretConfiguration("alpha"),SecretConfiguration("beta"),
+      TransitioningSecret("alpha","beta",
         overlapInterval), HS256)
 
     val tokenSignedWithOlderSecret =
