@@ -12,7 +12,7 @@ import com.gu.play.secretrotation.SnapshotProvider
 import io.jsonwebtoken.SignatureAlgorithm.HS256
 import io.jsonwebtoken._
 import org.joda.time.Duration
-import play.api.http.{HttpConfiguration, SecretConfiguration}
+import play.api.http.HttpConfiguration
 import play.api.libs.json.JsValue
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.mvc.Results.Redirect
@@ -102,8 +102,8 @@ case class AntiForgeryChecker(
   sessionIdKeyName: String = "play-googleauth-session-id"
 ) {
 
-  private def base64EncodedSecretFrom(sc: SecretConfiguration): String =
-    Base64.getEncoder.encodeToString(sc.secret.getBytes(UTF_8))
+  private def base64EncodedSecretFrom(secret: String): String =
+    Base64.getEncoder.encodeToString(secret.getBytes(UTF_8))
 
   def ensureUserHasSessionId(t: String => Future[Result])(implicit request: RequestHeader, ec: ExecutionContext):Future[Result] = {
     val sessionId = request.session.get(sessionIdKeyName).getOrElse(generateSessionId())
@@ -150,7 +150,7 @@ object AntiForgeryChecker {
   @deprecated("You can use this method if you never rotate your Play Application secret, but that's not a good security practice.\n" +
     "Use https://github.com/guardian/play-secret-rotation and the vanilla `AntiForgeryChecker` constructor","0.7.7")
   def borrowSettingsFromPlay(httpConfiguration: HttpConfiguration): AntiForgeryChecker =
-    AntiForgeryChecker(InitialSecret(httpConfiguration.secret), signatureAlgorithmFromPlay(httpConfiguration))
+    AntiForgeryChecker(InitialSecret(httpConfiguration.secret.secret), signatureAlgorithmFromPlay(httpConfiguration))
 
   /**
     * If you're happy using the Playframework, you're probably happy to use their choice of JWT
