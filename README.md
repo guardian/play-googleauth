@@ -12,7 +12,7 @@ Note that from version **0.7.7** onwards, `play-googleauth` recommends the
 use of the [`play-secret-rotation`](https://github.com/guardian/play-secret-rotation)
 library, which allows you to rotate your Play [Application Secret](https://www.playframework.com/documentation/2.6.x/ApplicationSecret)
 on an active cluster of Play app servers. `play-googleauth` uses the Play
-Application Secret to sign the OAuth Anti-Forgery token, and needs to to know the
+Application Secret to sign the OAuth Anti-Forgery token, and needs to know the
 validity over time of your rotated secrets to verify tokens correctly. If you decide
 you are willing to take the security risk of _not_ rotating your Application Secret,
 you can still use the deprecated `AntiForgeryChecker.borrowSettingsFromPlay(httpConfiguration)`
