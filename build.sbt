@@ -15,6 +15,19 @@ def projectWithPlayVersion(majorMinorVersion: String) =
 
     licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
 
+    publishTo := sonatypePublishTo.value,
+
+    pomExtra := {
+      <url>https://github.com/guardian/play-googleauth</url>
+        <developers>
+          <developer>
+            <id>sihil</id>
+            <name>Simon Hildrew</name>
+            <url>https://github.com/sihil</url>
+          </developer>
+        </developers>
+    },
+
     scmInfo := Some(ScmInfo(
       url("https://github.com/guardian/play-googleauth"),
       "scm:git:git@github.com:guardian/play-googleauth.git"
@@ -38,19 +51,6 @@ lazy val `play-googleauth-root` = (project in file(".")).aggregate(
   publishArtifact := false,
   skip in publish := true,
   sonatypeProfileName := "com.gu",
-
-  publishTo := sonatypePublishTo.value,
-
-  pomExtra := {
-    <url>https://github.com/guardian/play-googleauth</url>
-      <developers>
-        <developer>
-          <id>sihil</id>
-          <name>Simon Hildrew</name>
-          <url>https://github.com/sihil</url>
-        </developer>
-      </developers>
-  },
 
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
 
