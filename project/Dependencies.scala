@@ -9,16 +9,20 @@ import sbt._
   */
 object Dependencies {
 
-  //versions
+  val exactPlayVersions = Map(
+    "26" -> "2.6.13",
+    "27" -> "2.7.3"
+  )
 
-  val playVersion = "2.6.17"
+  def playLibs(majorMinorVersion: String): Seq[ModuleID] = {
+    val playVersion = exactPlayVersions(majorMinorVersion)
 
+    val play = "com.typesafe.play" %% "play" % playVersion % "provided"
+    val playWS = "com.typesafe.play" %% "play-ws" % playVersion % "provided"
+    val playTest = "com.typesafe.play" %% "play-test" % playVersion % "test"
 
-  //libraries
-
-  val play = "com.typesafe.play" %% "play" % playVersion
-  val playWS = "com.typesafe.play" %% "play-ws" % playVersion
-  val playTest = "com.typesafe.play" %% "play-test" % playVersion
+    Seq(play, playWS, playTest)
+  }
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.9"
 

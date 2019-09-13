@@ -8,6 +8,17 @@ It can also be used to get information about the groups of your Google Apps Doma
 Versions
 --------
 
+### Supported Play Versions
+
+* Play **2.7** : use [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v27_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v27_2.12)
+  ```
+  libraryDependencies += "com.gu.play-googleauth" %% "play-v27" % "[maven version number]"
+  ```
+* Play **2.6** : use [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v26_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v26_2.12)
+  ```
+  libraryDependencies += "com.gu.play-googleauth" %% "play-v26" % "[maven version number]"
+  ```
+
 Note that from version **0.7.7** onwards, `play-googleauth` recommends the
 use of the [`play-secret-rotation`](https://github.com/guardian/play-secret-rotation)
 library, which allows you to rotate your Play [Application Secret](https://www.playframework.com/documentation/2.6.x/ApplicationSecret)
@@ -17,33 +28,6 @@ validity over time of your rotated secrets to verify tokens correctly. If you de
 you are willing to take the security risk of _not_ rotating your Application Secret,
 you can still use the deprecated `AntiForgeryChecker.borrowSettingsFromPlay(httpConfiguration)`
 method.
-
-For Play 2.6.x use version [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu/play-googleauth_2.11):
-```
-libraryDependencies += "com.gu" %% "play-googleauth" % "[maven version number]"
-```
-
-**0.7.0:** This version has a dependency on `cats 0.9.0` so may not be compatible with projects depending on different versions of cats
-
-**0.7.1:** This version has a dependency on `cats 1.0.1` so may not be compatible with projects depending on `cats 0.*.*`. It **will** be compatible with `cats 1.*.*` thanks to the adoption of [semver](https://github.com/typelevel/cats#binary-compatibility-and-versioning) conventions starting from `cats 1.0.0`
-
-For Play 2.5.x use version 0.6.x (`play-2.5.x` branch)
-```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.6.0"
-```
-**0.6.0:** This version has a dependency on `cats 0.8.1`
-
-**0.6.1:** This version has a dependency on `cats 1.0.1`
-
-For Play 2.4.x use version 0.3.x (`play-2.4.x` branch)
-```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.3.7"
-```
-
-For Play 2.3.x use version 0.2.x (`play-2.3.x` branch):
-```
-libraryDependencies += "com.gu" %% "play-googleauth" % "0.2.2"
-```
 
 Adding to your application
 --------------------------

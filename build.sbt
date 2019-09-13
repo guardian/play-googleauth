@@ -3,63 +3,70 @@ import Dependencies._
 
 name               := "play-googleauth"
 
-organization       := "com.gu"
+def projectWithPlayVersion(majorMinorVersion: String) =
+  Project(s"play-v$majorMinorVersion", file(s"play-v$majorMinorVersion")).settings(
+    organization       := "com.gu.play-googleauth",
 
-scalaVersion       := "2.12.8"
+    scalaVersion       := "2.12.9",
 
-crossScalaVersions := Seq(scalaVersion.value)
+    scalacOptions ++= Seq("-feature", "-deprecation"),
 
-resolvers += Resolver.typesafeIvyRepo("releases")
+    description        := "Simple Google authentication module for Play 2",
 
-libraryDependencies ++= Seq(
-  play % "provided",
-  playWS % "provided",
-  "com.gu.play-secret-rotation" %% "core" % "0.15",
-  "org.typelevel" %% "cats-core" % "1.0.1",
-  commonsCodec,
-  playTest % "test",
-  "org.scalatest" %% "scalatest" % "3.0.3" % "test"
-) ++ googleDirectoryAPI
+    licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
 
-scalacOptions ++= Seq("-feature", "-deprecation")
+    scmInfo := Some(ScmInfo(
+      url("https://github.com/guardian/play-googleauth"),
+      "scm:git:git@github.com:guardian/play-googleauth.git"
+    )),
 
-description        := "Simple Google authentication module for Play 2"
+    libraryDependencies ++= Seq(
+      "com.gu.play-secret-rotation" %% "core" % "0.15",
+      "org.typelevel" %% "cats-core" % "1.0.1",
+      commonsCodec,
+      "org.scalatest" %% "scalatest" % "3.0.3" % "test"
+    ) ++ googleDirectoryAPI ++ playLibs(majorMinorVersion)
+  )
 
-licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"))
+lazy val `play-v26` = projectWithPlayVersion("26")
+lazy val `play-v27` = projectWithPlayVersion("27")
 
-scmInfo := Some(ScmInfo(
-  url("https://github.com/guardian/play-googleauth"),
-  "scm:git:git@github.com:guardian/play-googleauth.git"
-))
+lazy val `play-googleauth-root` = (project in file(".")).aggregate(
+  `play-v26`,
+  `play-v27`
+).settings(
+  publishArtifact := false,
+  skip in publish := true,
+  sonatypeProfileName := "com.gu",
 
-publishTo := sonatypePublishTo.value
+  publishTo := sonatypePublishTo.value,
 
-pomExtra := {
-  <url>https://github.com/guardian/play-googleauth</url>
-  <developers>
-    <developer>
-      <id>sihil</id>
-      <name>Simon Hildrew</name>
-      <url>https://github.com/sihil</url>
-    </developer>
-  </developers>
-}
+  pomExtra := {
+    <url>https://github.com/guardian/play-googleauth</url>
+      <developers>
+        <developer>
+          <id>sihil</id>
+          <name>Simon Hildrew</name>
+          <url>https://github.com/sihil</url>
+        </developer>
+      </developers>
+  },
 
-releaseCrossBuild := true
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
 
-releasePublishArtifactsAction := PgpKeys.publishSigned.value
-
-releaseProcess := Seq(
-  checkSnapshotDependencies,
-  inquireVersions,
-  runClean,
-  runTest,
-  setReleaseVersion,
-  commitReleaseVersion,
-  tagRelease,
-  publishArtifacts,
-  setNextVersion,
-  commitNextVersion,
-  releaseStepCommand("sonatypeReleaseAll"),
-  pushChanges
+  releaseProcess := Seq(
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    runTest,
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    // For cross-build projects, use releaseStepCommand("+publishSigned")
+    releaseStepCommandAndRemaining("publishSigned"),
+    releaseStepCommand("sonatypeBundleRelease"),
+    setNextVersion,
+    commitNextVersion,
+    pushChanges
+  )
 )
