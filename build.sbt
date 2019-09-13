@@ -12,7 +12,7 @@ val sonatypeReleaseSettings = Seq(
 
   licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
 
-  publishTo := sonatypePublishTo.value,
+  publishTo := sonatypePublishToBundle.value,
 
   pomExtra := {
     <url>https://github.com/guardian/play-googleauth</url>
@@ -61,7 +61,7 @@ def projectWithPlayVersion(majorMinorVersion: String) =
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.0.3" % "test"
     ) ++ googleDirectoryAPI ++ playLibs(majorMinorVersion),
-    
+
     sonatypeReleaseSettings
   )
 
