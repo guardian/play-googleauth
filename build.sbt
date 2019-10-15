@@ -30,9 +30,8 @@ val sonatypeReleaseSettings = Seq(
     "scm:git:git@github.com:guardian/play-googleauth.git"
   )),
 
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-
-  releaseProcess := Seq(
+  releaseCrossBuild := true, // true if you cross-build the project for multiple Scala versions
+  releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,
     runClean,
@@ -40,8 +39,8 @@ val sonatypeReleaseSettings = Seq(
     setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
-    // For cross-build projects, use releaseStepCommand("+publishSigned")
-    releaseStepCommandAndRemaining("publishSigned"),
+    // For non cross-build projects, use releaseStepCommand("publishSigned")
+    releaseStepCommandAndRemaining("+publishSigned"),
     releaseStepCommand("sonatypeBundleRelease"),
     setNextVersion,
     commitNextVersion,
@@ -51,22 +50,22 @@ val sonatypeReleaseSettings = Seq(
 
 def projectWithPlayVersion(majorMinorVersion: String) =
   Project(s"play-v$majorMinorVersion", file(s"play-v$majorMinorVersion")).settings(
-    scalaVersion       := "2.12.9",
+    scalaVersion       := "2.12.10",
 
     scalacOptions ++= Seq("-feature", "-deprecation"),
 
     libraryDependencies ++= Seq(
-      "com.gu.play-secret-rotation" %% "core" % "0.15",
-      "org.typelevel" %% "cats-core" % "1.0.1",
+      "com.gu.play-secret-rotation" %% "core" % "0.17",
+      "org.typelevel" %% "cats-core" % "2.0.0",
       commonsCodec,
-      "org.scalatest" %% "scalatest" % "3.0.3" % "test"
+      "org.scalatest" %% "scalatest" % "3.0.8" % "test"
     ) ++ googleDirectoryAPI ++ playLibs(majorMinorVersion),
 
     sonatypeReleaseSettings
   )
 
 lazy val `play-v26` = projectWithPlayVersion("26")
-lazy val `play-v27` = projectWithPlayVersion("27")
+lazy val `play-v27` = projectWithPlayVersion("27").settings(crossScalaVersions := Seq(scalaVersion.value, "2.13.1"))
 
 lazy val `play-googleauth-root` = (project in file(".")).aggregate(
   `play-v26`,
