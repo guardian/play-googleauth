@@ -12,6 +12,8 @@ import com.gu.play.secretrotation.SnapshotProvider
 import io.jsonwebtoken.SignatureAlgorithm.HS256
 import io.jsonwebtoken._
 import org.joda.time.Duration
+import play.api.Logger
+import play.api.http.HeaderNames.USER_AGENT
 import play.api.http.HttpConfiguration
 import play.api.libs.json.JsValue
 import play.api.libs.ws.{WSClient, WSResponse}
@@ -126,7 +128,11 @@ case class AntiForgeryChecker(
       Failure(throw new IllegalArgumentException("the session ID found in the anti forgery token does not match the Play session ID"))
 
   def verifyToken(request: RequestHeader): Try[Unit] = for {
-    sessionIdFromPlaySession <- Try(request.session.get(sessionIdKeyName).getOrElse(throw new IllegalArgumentException("No Play session ID found")))
+    sessionIdFromPlaySession <- Try(request.session.get(sessionIdKeyName).getOrElse {
+      val message = "No Play session ID found"
+      Logger.warn(s"$message. sessionEmpty: ${request.session.isEmpty}; request userAgent: ${request.headers.get(USER_AGENT)}")
+      throw new IllegalArgumentException(message)
+    })
     oauthAntiForgeryState <- Try(request.getQueryString("state").getOrElse(throw new IllegalArgumentException("No anti-forgery state returned in OAuth callback")))
     jwtClaims <- parseJwtClaimsFrom(oauthAntiForgeryState)
     _ <- checkChoiceOfSigningAlgorithm(jwtClaims)
