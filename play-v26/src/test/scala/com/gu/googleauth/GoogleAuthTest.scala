@@ -59,7 +59,6 @@ class GoogleAuthTest extends AsyncFreeSpec with Matchers with MockWSHelpers {
     implicit val noHttpCallsAllowed: WSClient = MockWS(PartialFunction.empty)
     implicit val request: RequestHeader = requestWithUser(user)
 
-
     "Generates a correct redirect URL when no particular domains are provided" in {
       val config = googleAuthConfig(domains = List.empty)
 
@@ -84,7 +83,7 @@ class GoogleAuthTest extends AsyncFreeSpec with Matchers with MockWSHelpers {
       }
     }
 
-    "Adds an hd parameter set to '*' when exactly one domain is specified" in {
+    "Adds an hd parameter set to '*' when more than one domain is specified" in {
       doRedirect(googleAuthConfig(domains = List("guardian.co.uk", "example.com"))).map { uri =>
         uri.query().get("hd") shouldBe Some("*")
       }
@@ -127,19 +126,18 @@ class GoogleAuthTest extends AsyncFreeSpec with Matchers with MockWSHelpers {
           state <- obtainState(onlyGuardian)
           req = requestWithUser(user, /.withQuery(Query("state" -> state, "code" -> "foo")))
           _ <- GoogleAuth.validatedUserIdentity(onlyGuardian)(req, implicitly, implicitly)
-        } yield fail("This should have thrown an exception")
+        } yield ()
       }
     }
 
     "Let you through if you're in just one of the allowed domains" in {
-      val twoDomains = googleAuthConfig(domains = List("guardian.co.uk", "example.com"))
-      val nonGuardianClaims = claims.copy(email = "foo@example.com")
+      val twoDomains = googleAuthConfig(domains = List("guardian.co.uk", user.email.split('@').last))
 
       for {
         state <- obtainState(twoDomains)
         req = requestWithUser(user, /.withQuery(Query("state" -> state, "code" -> "foo")))
         validated  <- GoogleAuth.validatedUserIdentity(twoDomains)(req, implicitly, implicitly)
-      } yield validated.email shouldBe nonGuardianClaims.email
+      } yield validated shouldBe user
     }
   }
 }
