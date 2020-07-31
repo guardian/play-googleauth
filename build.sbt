@@ -48,6 +48,7 @@ val sonatypeReleaseSettings = Seq(
   )
 )
 
+
 def projectWithPlayVersion(majorMinorVersion: String) =
   Project(s"play-v$majorMinorVersion", file(s"play-v$majorMinorVersion")).settings(
     scalaVersion       := "2.12.10",

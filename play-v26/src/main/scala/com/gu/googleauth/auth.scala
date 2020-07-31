@@ -210,6 +210,11 @@ object GoogleAuth {
     discoveryDocument().map(dd => Redirect(s"${dd.authorization_endpoint}", queryString))
   }
 
+  private def checkDomains(domains: List[String], claims: JwtClaims): Unit =
+    if (domains.nonEmpty && !domains.exists(claims.email.split("@").lastOption.contains)) {
+      throw new GoogleAuthException("Configured Google domain does not match")
+    }
+
   def validatedUserIdentity(config: GoogleAuthConfig)
         (implicit request: RequestHeader, context: ExecutionContext, ws: WSClient): Future[UserIdentity] = {
 
@@ -227,22 +232,19 @@ object GoogleAuth {
         googleResponse(response) { json =>
           val token = Token.fromJson(json)
           val jwt = token.jwt
-          config.domains foreach { domain =>
-            if (!jwt.claims.email.split("@").lastOption.contains(domain))
-              throw new GoogleAuthException("Configured Google domain does not match")
-          }
+          checkDomains(config.domains, jwt.claims)
           ws.url(dd.userinfo_endpoint)
             .withHttpHeaders("Authorization" -> s"Bearer ${token.access_token}")
             .get().map { response =>
             googleResponse(response) { json =>
               val userInfo = UserInfo.fromJson(json)
               UserIdentity(
-                jwt.claims.sub,
-                jwt.claims.email,
-                userInfo.given_name,
-                userInfo.family_name,
-                jwt.claims.exp,
-                userInfo.picture
+                sub = jwt.claims.sub,
+                email = jwt.claims.email,
+                firstName = userInfo.given_name,
+                lastName = userInfo.family_name,
+                exp = jwt.claims.exp,
+                avatarUrl = userInfo.picture
               )
             }
           }
