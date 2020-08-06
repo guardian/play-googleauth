@@ -29,39 +29,27 @@ import scala.util.{Failure, Success, Try}
   * @param clientId The ClientID from the developer dashboard
   * @param clientSecret The client secret from the developer dashboard
   * @param redirectUrl The URL to return to after authentication has completed
-  * @param domain An optional domain to restrict login to (e.g. guardian.co.uk)
+  * @param domains An optional list of domains to restrict login to (e.g. guardian.co.uk)
   * @param maxAuthAge An optional duration after which you want a user to be prompted for their password again
   * @param enforceValidity A boolean indicating whether you want a user to be re-authenticated when their session expires
   * @param prompt An optional space delimited, case sensitive list of ASCII string values that specifies whether the
   *               Authorization Server prompts the End-User for reauthentication and consent
  * @param antiForgeryChecker configuration for the checks that ensure the OAuth callback can't be forged
   */
-case class GoogleAuthConfig private(
+case class GoogleAuthConfig(
   clientId: String,
   clientSecret: String,
   redirectUrl: String,
-  domain: Option[String],
-  maxAuthAge: Option[Duration],
-  enforceValidity: Boolean,
-  prompt: Option[String],
+  domains: List[String],
+  maxAuthAge: Option[Duration] = GoogleAuthConfig.defaultMaxAuthAge,
+  enforceValidity: Boolean = GoogleAuthConfig.defaultEnforceValidity,
+  prompt: Option[String] = GoogleAuthConfig.defaultPrompt,
   antiForgeryChecker: AntiForgeryChecker
 )
 object GoogleAuthConfig {
-  private val defaultMaxAuthAge = None
-  private val defaultEnforceValidity = true
-  private val defaultPrompt = None
-
-  def apply(
-    clientId: String,
-    clientSecret: String,
-    redirectUrl: String,
-    domain: String,
-    maxAuthAge: Option[Duration] = defaultMaxAuthAge,
-    enforceValidity: Boolean = defaultEnforceValidity,
-    prompt: Option[String] = defaultPrompt,
-    antiForgeryChecker: AntiForgeryChecker
-
-  ): GoogleAuthConfig = GoogleAuthConfig(clientId, clientSecret, redirectUrl, Some(domain), maxAuthAge, enforceValidity, prompt, antiForgeryChecker)
+  private val defaultMaxAuthAge: Option[Duration] = None
+  private val defaultEnforceValidity: Boolean = true
+  private val defaultPrompt: Option[String] = None
 
   /**
     * Creates a GoogleAuthConfig that does not restrict acceptable email domains.
@@ -77,7 +65,7 @@ object GoogleAuthConfig {
     prompt: Option[String] = defaultPrompt,
     antiForgeryChecker: AntiForgeryChecker
   ): GoogleAuthConfig =
-    GoogleAuthConfig(clientId, clientSecret, redirectUrl, None, maxAuthAge, enforceValidity, prompt, antiForgeryChecker)
+    GoogleAuthConfig(clientId, clientSecret, redirectUrl, List.empty, maxAuthAge, enforceValidity, prompt, antiForgeryChecker)
 }
 
 /**
@@ -193,6 +181,18 @@ object GoogleAuth {
     }
   }
 
+  /**
+    * From the Google docs:
+    * https://developers.google.com/identity/protocols/oauth2/openid-connect#authenticationuriparameters
+    * The wildcard "optimize[s] for G Suite accounts generally" which is the best we can do with >1 domain
+    */
+  private def hdParameter(domains: List[String]): Option[String] =
+    domains match {
+      case Nil => None
+      case domain :: Nil => Some(domain)
+      case _ => Some("*")
+    }
+
   def redirectToGoogle(config: GoogleAuthConfig, sessionId: String)
                       (implicit request: RequestHeader, context: ExecutionContext, ws: WSClient): Future[Result] = {
     val userIdentity = UserIdentity.fromRequest(request)
@@ -202,13 +202,18 @@ object GoogleAuth {
       "scope" -> Seq("openid email profile"),
       "redirect_uri" -> Seq(config.redirectUrl),
       "state" -> Seq(config.antiForgeryChecker.generateToken(sessionId))) ++
-      config.domain.map(domain => "hd" -> Seq(domain)) ++
+      hdParameter(config.domains).map(domain => "hd" -> Seq(domain)) ++
       config.maxAuthAge.map(age => "max_auth_age" -> Seq(s"${age.getStandardSeconds}")) ++
       config.prompt.map(prompt => "prompt" -> Seq(prompt)) ++
       userIdentity.map(_.email).map("login_hint" -> Seq(_))
 
     discoveryDocument().map(dd => Redirect(s"${dd.authorization_endpoint}", queryString))
   }
+
+  private def checkDomains(domains: List[String], claims: JwtClaims): Unit =
+    if (domains.nonEmpty && !domains.exists(claims.email.split("@").lastOption.contains)) {
+      throw new GoogleAuthException("Configured Google domain does not match")
+    }
 
   def validatedUserIdentity(config: GoogleAuthConfig)
         (implicit request: RequestHeader, context: ExecutionContext, ws: WSClient): Future[UserIdentity] = {
@@ -227,22 +232,19 @@ object GoogleAuth {
         googleResponse(response) { json =>
           val token = Token.fromJson(json)
           val jwt = token.jwt
-          config.domain foreach { domain =>
-            if (!jwt.claims.email.split("@").lastOption.contains(domain))
-              throw new GoogleAuthException("Configured Google domain does not match")
-          }
+          checkDomains(config.domains, jwt.claims)
           ws.url(dd.userinfo_endpoint)
             .withHttpHeaders("Authorization" -> s"Bearer ${token.access_token}")
             .get().map { response =>
             googleResponse(response) { json =>
               val userInfo = UserInfo.fromJson(json)
               UserIdentity(
-                jwt.claims.sub,
-                jwt.claims.email,
-                userInfo.given_name,
-                userInfo.family_name,
-                jwt.claims.exp,
-                userInfo.picture
+                sub = jwt.claims.sub,
+                email = jwt.claims.email,
+                firstName = userInfo.given_name,
+                lastName = userInfo.family_name,
+                exp = jwt.claims.exp,
+                avatarUrl = userInfo.picture
               )
             }
           }

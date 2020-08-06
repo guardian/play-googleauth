@@ -9,10 +9,17 @@ import sbt._
   */
 object Dependencies {
 
-  val exactPlayVersions = Map(
-    "26" -> "2.6.13",
-    "27" -> "2.7.3"
-  )
+  private def exactPlayVersions(majorMinorVersion: String): String =
+    majorMinorVersion match {
+      case "26" => "2.6.13"
+      case "27" => "2.7.3"
+    }
+
+  private def mockWsVersion(majorMinorVersion: String): String =
+    majorMinorVersion match {
+      case "26" => "2.6.6"
+      case "27" => "2.7.1"
+    }
 
   def playLibs(majorMinorVersion: String): Seq[ModuleID] = {
     val playVersion = exactPlayVersions(majorMinorVersion)
@@ -21,7 +28,10 @@ object Dependencies {
     val playWS = "com.typesafe.play" %% "play-ws" % playVersion % "provided"
     val playTest = "com.typesafe.play" %% "play-test" % playVersion % "test"
 
-    Seq(play, playWS, playTest)
+    // mockWs depends on some play-ahc-ws classes, so include them for tests
+    val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % playVersion % Test
+    val mockWs = "de.leanovate.play-mockws" %% "play-mockws" % mockWsVersion(majorMinorVersion) % Test
+    Seq(play, playWS, playTest, playAhcWs, mockWs)
   }
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.9"
