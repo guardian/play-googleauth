@@ -45,7 +45,7 @@ object Dependencies {
     */
   val googleDirectoryAPI = Seq(
     "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev118-1.25.0" exclude("com.google.guava", "guava-jdk5"),
-    "com.google.api-client" % "google-api-client" % "1.30.9", // Required as it fixes https://github.com/googleapis/google-api-java-client/issues/1487
+    "com.google.api-client" % "google-api-client" % "1.30.10", // Required as it fixes https://github.com/googleapis/google-api-java-client/issues/1487
     "com.google.guava" % "guava" % "25.0-jre"
   )
 
