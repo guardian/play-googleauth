@@ -91,6 +91,7 @@ case class AntiForgeryChecker(
   signatureAlgorithm: SignatureAlgorithm = HS256, // same default currently used by Play: https://github.com/playframework/playframework/blob/a39b208/framework/src/play/src/main/scala/play/api/http/HttpConfiguration.scala#L336
   sessionIdKeyName: String = "play-googleauth-session-id"
 ) {
+  val logger: Logger = Logger(this.getClass())
 
   private def base64EncodedSecretFrom(secret: String): String =
     Base64.getEncoder.encodeToString(secret.getBytes(UTF_8))
@@ -118,7 +119,7 @@ case class AntiForgeryChecker(
   def verifyToken(request: RequestHeader): Try[Unit] = for {
     sessionIdFromPlaySession <- Try(request.session.get(sessionIdKeyName).getOrElse {
       val message = "No Play session ID found"
-      Logger.warn(s"$message. sessionEmpty: ${request.session.isEmpty}; request userAgent: ${request.headers.get(USER_AGENT)}")
+      logger.warn(s"$message. sessionEmpty: ${request.session.isEmpty}; request userAgent: ${request.headers.get(USER_AGENT)}")
       throw new IllegalArgumentException(message)
     })
     oauthAntiForgeryState <- Try(request.getQueryString("state").getOrElse(throw new IllegalArgumentException("No anti-forgery state returned in OAuth callback")))

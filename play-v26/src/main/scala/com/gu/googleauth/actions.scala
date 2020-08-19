@@ -89,6 +89,8 @@ class AuthAction[A](val authConfig: GoogleAuthConfig, loginTarget: Call, bodyPar
 }
 
 trait LoginSupport {
+  val logger: Logger = Logger(this.getClass())
+
   implicit def wsClient: WSClient
 
   /**
@@ -122,7 +124,7 @@ trait LoginSupport {
     */
   def checkIdentity()(implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, UserIdentity] = {
     def logWarn(desc:String, e: Throwable): Unit = {
-      Logger.warn(s"${getClass.getSimpleName} : failed-oauth-callback : $desc : '${e.getMessage}'", e)
+      logger.warn(s"${getClass.getSimpleName} : failed-oauth-callback : $desc : '${e.getMessage}'", e)
     }
 
     GoogleAuth.validatedUserIdentity(authConfig).attemptT.leftSemiflatMap {
@@ -149,14 +151,14 @@ trait LoginSupport {
                          (implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, Unit] = {
     googleGroupChecker.retrieveGroupsFor(userIdentity.email).attemptT
       .leftMap { t =>
-        Logger.warn("Login failure, Could not look up user's Google groups", t)
+        logger.warn("Login failure, Could not look up user's Google groups", t)
         redirectWithError(failureRedirectTarget, "Login failure. Unable to look up Google Group membership")
       }
       .subflatMap { userGroups =>
         if (Actions.checkGoogleGroups(userGroups, requiredGoogleGroups)) {
           Right(())
         } else {
-          Logger.info("Login failure, user not in required Google groups")
+          logger.info("Login failure, user not in required Google groups")
           Left(redirectWithError(failureRedirectTarget, errorMessage))
         }
       }
@@ -227,12 +229,14 @@ trait Filters extends UserIdentifier {
     notInValidGroup: R[_] => Result = (_: R[_])  => Forbidden
   )(implicit ec: ExecutionContext) = new ActionFilter[R] {
 
+    val logger: Logger = Logger(this.getClass())
+
     override protected def executionContext: ExecutionContext = ec
 
     protected def filter[A](request: R[A]): Future[Option[Result]] =
       userIdentity(request: RequestHeader).fold[Future[Option[Result]]](Future.successful(Some(notInValidGroup(request)))) {
         user => for (usersGroups <- groupChecker.retrieveGroupsFor(user.email)) yield if (includedGroups.intersect(usersGroups).nonEmpty) None else {
-          Logger.info(s"Excluding ${user.email} from '${request.path}' - not in accepted groups: $includedGroups")
+          logger.info(s"Excluding ${user.email} from '${request.path}' - not in accepted groups: $includedGroups")
           Some(notInValidGroup(request))
         }
       }
