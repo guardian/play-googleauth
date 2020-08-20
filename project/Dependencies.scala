@@ -34,7 +34,7 @@ object Dependencies {
     Seq(play, playWS, playTest, playAhcWs, mockWs)
   }
 
-  val commonsCodec = "commons-codec" % "commons-codec" % "1.9"
+  val commonsCodec = "commons-codec" % "commons-codec" % "1.14"
 
   /** The google-api-services-admin-directory artifact has a transitive dependency on com.google.guava:guava-jdk5 - a
     * nasty artifact that clashes with the regular com.google.guava:guava artifact, providing two versions of the same
@@ -44,7 +44,8 @@ object Dependencies {
     * @see https://github.com/guardian/subscriptions-frontend/pull/363#issuecomment-186190081
     */
   val googleDirectoryAPI = Seq(
-    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev53-1.20.0" exclude("com.google.guava", "guava-jdk5"),
+    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev118-1.25.0" exclude("com.google.guava", "guava-jdk5"),
+    "com.google.api-client" % "google-api-client" % "1.30.10", // Required as it fixes https://github.com/googleapis/google-api-java-client/issues/1487
     "com.google.guava" % "guava" % "25.0-jre"
   )
 
