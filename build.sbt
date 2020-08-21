@@ -64,12 +64,12 @@ def projectWithPlayVersion(majorMinorVersion: String) =
     sonatypeReleaseSettings
   )
 
-lazy val `play-v26` = projectWithPlayVersion("26")
 lazy val `play-v27` = projectWithPlayVersion("27").settings(crossScalaVersions := Seq(scalaVersion.value, "2.13.1"))
+lazy val `play-v28` = projectWithPlayVersion("28").settings(crossScalaVersions := Seq(scalaVersion.value, "2.13.1"))
 
 lazy val `play-googleauth-root` = (project in file(".")).aggregate(
-  `play-v26`,
-  `play-v27`
+  `play-v27`,
+  `play-v28`
 ).settings(
   publishArtifact := false,
   skip in publish := true,

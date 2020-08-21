@@ -4,6 +4,7 @@ import com.gu.googleauth
 import com.gu.googleauth.{AuthAction, Filters, GoogleAuthConfig, GoogleGroupChecker}
 import play.api.mvc.Security.AuthenticatedRequest
 import play.api.mvc._
+import com.google.api.client.auth.oauth2.GoogleCredential
 
 import scala.concurrent.ExecutionContext
 
