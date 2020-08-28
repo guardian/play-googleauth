@@ -57,6 +57,7 @@ def projectWithPlayVersion(majorMinorVersion: String) =
     libraryDependencies ++= Seq(
       "com.gu.play-secret-rotation" %% "core" % "0.17",
       "org.typelevel" %% "cats-core" % "2.0.0",
+      "com.typesafe.akka" %% "akka-http-core" % "10.2.0",
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.0.8" % "test"
     ) ++ googleDirectoryAPI ++ playLibs(majorMinorVersion),
@@ -64,12 +65,12 @@ def projectWithPlayVersion(majorMinorVersion: String) =
     sonatypeReleaseSettings
   )
 
-lazy val `play-v26` = projectWithPlayVersion("26")
 lazy val `play-v27` = projectWithPlayVersion("27").settings(crossScalaVersions := Seq(scalaVersion.value, "2.13.1"))
+lazy val `play-v28` = projectWithPlayVersion("28").settings(crossScalaVersions := Seq(scalaVersion.value, "2.13.1"))
 
 lazy val `play-googleauth-root` = (project in file(".")).aggregate(
-  `play-v26`,
-  `play-v27`
+  `play-v27`,
+  `play-v28`
 ).settings(
   publishArtifact := false,
   skip in publish := true,

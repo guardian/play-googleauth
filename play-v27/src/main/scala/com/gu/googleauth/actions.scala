@@ -4,7 +4,7 @@ import cats.data.EitherT
 import cats.instances.future._
 import cats.syntax.applicativeError._
 import io.jsonwebtoken.ExpiredJwtException
-import play.api.Logger
+import play.api.Logging
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.libs.ws.WSClient
 import play.api.mvc.Results._
@@ -88,7 +88,7 @@ class AuthAction[A](val authConfig: GoogleAuthConfig, loginTarget: Call, bodyPar
   override def parser: BodyParser[A] = bodyParser
 }
 
-trait LoginSupport {
+trait LoginSupport extends Logging {
   implicit def wsClient: WSClient
 
   /**
@@ -122,7 +122,7 @@ trait LoginSupport {
     */
   def checkIdentity()(implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, UserIdentity] = {
     def logWarn(desc:String, e: Throwable): Unit = {
-      Logger.warn(s"${getClass.getSimpleName} : failed-oauth-callback : $desc : '${e.getMessage}'", e)
+      logger.warn(s"${getClass.getSimpleName} : failed-oauth-callback : $desc : '${e.getMessage}'", e)
     }
 
     GoogleAuth.validatedUserIdentity(authConfig).attemptT.leftSemiflatMap {
@@ -149,14 +149,14 @@ trait LoginSupport {
                          (implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, Unit] = {
     googleGroupChecker.retrieveGroupsFor(userIdentity.email).attemptT
       .leftMap { t =>
-        Logger.warn("Login failure, Could not look up user's Google groups", t)
+        logger.warn("Login failure, Could not look up user's Google groups", t)
         redirectWithError(failureRedirectTarget, "Login failure. Unable to look up Google Group membership")
       }
       .subflatMap { userGroups =>
         if (Actions.checkGoogleGroups(userGroups, requiredGoogleGroups)) {
           Right(())
         } else {
-          Logger.info("Login failure, user not in required Google groups")
+          logger.info("Login failure, user not in required Google groups")
           Left(redirectWithError(failureRedirectTarget, errorMessage))
         }
       }
@@ -212,7 +212,7 @@ object Actions {
   }
 }
 
-trait Filters extends UserIdentifier {
+trait Filters extends UserIdentifier with Logging {
   def groupChecker: GoogleGroupChecker
 
   /**
@@ -232,7 +232,7 @@ trait Filters extends UserIdentifier {
     protected def filter[A](request: R[A]): Future[Option[Result]] =
       userIdentity(request: RequestHeader).fold[Future[Option[Result]]](Future.successful(Some(notInValidGroup(request)))) {
         user => for (usersGroups <- groupChecker.retrieveGroupsFor(user.email)) yield if (includedGroups.intersect(usersGroups).nonEmpty) None else {
-          Logger.info(s"Excluding ${user.email} from '${request.path}' - not in accepted groups: $includedGroups")
+          logger.info(s"Excluding ${user.email} from '${request.path}' - not in accepted groups: $includedGroups")
           Some(notInValidGroup(request))
         }
       }

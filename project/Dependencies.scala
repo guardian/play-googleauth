@@ -11,14 +11,14 @@ object Dependencies {
 
   private def exactPlayVersions(majorMinorVersion: String): String =
     majorMinorVersion match {
-      case "26" => "2.6.13"
       case "27" => "2.7.3"
+      case "28" => "2.8.1"
     }
 
   private def mockWsVersion(majorMinorVersion: String): String =
     majorMinorVersion match {
-      case "26" => "2.6.6"
       case "27" => "2.7.1"
+      case "28" => "2.8.0"
     }
 
   def playLibs(majorMinorVersion: String): Seq[ModuleID] = {
