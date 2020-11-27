@@ -57,9 +57,9 @@ def projectWithPlayVersion(majorMinorVersion: String) =
     libraryDependencies ++= Seq(
       "com.gu.play-secret-rotation" %% "core" % "0.17",
       "org.typelevel" %% "cats-core" % "2.0.0",
-      "com.typesafe.akka" %% "akka-http-core" % "10.2.0",
       commonsCodec,
-      "org.scalatest" %% "scalatest" % "3.0.8" % "test"
+      "org.scalatest" %% "scalatest" % "3.0.8" % Test,
+      "com.typesafe.akka" %% "akka-http-core" % "10.1.12" % Test
     ) ++ googleDirectoryAPI ++ playLibs(majorMinorVersion),
 
     sonatypeReleaseSettings
