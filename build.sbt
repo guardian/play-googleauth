@@ -50,8 +50,8 @@ val sonatypeReleaseSettings = Seq(
 
 def projectWithPlayVersion(majorMinorVersion: String) =
   Project(s"play-v$majorMinorVersion", file(s"play-v$majorMinorVersion")).settings(
-    scalaVersion       := "2.12.10",
-
+    scalaVersion       := "2.12.12",
+    crossScalaVersions := Seq(scalaVersion.value, "2.13.4"),
     scalacOptions ++= Seq("-feature", "-deprecation"),
 
     libraryDependencies ++= Seq(
@@ -65,8 +65,8 @@ def projectWithPlayVersion(majorMinorVersion: String) =
     sonatypeReleaseSettings
   )
 
-lazy val `play-v27` = projectWithPlayVersion("27").settings(crossScalaVersions := Seq(scalaVersion.value, "2.13.1"))
-lazy val `play-v28` = projectWithPlayVersion("28").settings(crossScalaVersions := Seq(scalaVersion.value, "2.13.1"))
+lazy val `play-v27` = projectWithPlayVersion("27")
+lazy val `play-v28` = projectWithPlayVersion("28")
 
 lazy val `play-googleauth-root` = (project in file(".")).aggregate(
   `play-v27`,
