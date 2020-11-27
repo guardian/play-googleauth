@@ -5,7 +5,7 @@ import java.security.PrivateKey
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
-import com.google.api.services.admin.directory.{Directory, DirectoryScopes}
+import com.google.api.services.directory.{Directory, DirectoryScopes}
 
 import scala.collection.JavaConverters._
 import scala.concurrent._
