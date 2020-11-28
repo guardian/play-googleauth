@@ -55,7 +55,7 @@ def projectWithPlayVersion(majorMinorVersion: String) =
     scalacOptions ++= Seq("-feature", "-deprecation"),
 
     libraryDependencies ++= Seq(
-      "com.gu.play-secret-rotation" %% "core" % "0.17",
+      "com.gu.play-secret-rotation" %% "core" % "0.18",
       "org.typelevel" %% "cats-core" % "2.0.0",
       "com.typesafe.akka" %% "akka-http-core" % "10.2.0",
       commonsCodec,
