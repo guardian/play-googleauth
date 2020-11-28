@@ -12,7 +12,7 @@ Versions
 #### Scala 2.13
 * Play **2.8** : use [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v28_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v28_2.13)
   ```
-  libraryDependencies += "com.gu.play-googleauth" %% "play-v27" % "[maven version number]"
+  libraryDependencies += "com.gu.play-googleauth" %% "play-v28" % "[maven version number]"
   ```
 * Play **2.7** : use [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v27_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v27_2.13)
   ```
@@ -23,7 +23,7 @@ Versions
 
 * Play **2.8** : use [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v28_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v28_2.12)
   ```
-  libraryDependencies += "com.gu.play-googleauth" %% "play-v27" % "[maven version number]"
+  libraryDependencies += "com.gu.play-googleauth" %% "play-v28" % "[maven version number]"
   ```
 * Play **2.7** : use [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v27_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v27_2.12)
   ```
