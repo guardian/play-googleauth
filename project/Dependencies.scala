@@ -44,9 +44,9 @@ object Dependencies {
     * @see https://github.com/guardian/subscriptions-frontend/pull/363#issuecomment-186190081
     */
   val googleDirectoryAPI = Seq(
-    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev118-1.25.0" exclude("com.google.guava", "guava-jdk5"),
-    "com.google.api-client" % "google-api-client" % "1.30.10", // Required as it fixes https://github.com/googleapis/google-api-java-client/issues/1487
-    "com.google.guava" % "guava" % "25.0-jre"
+    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20191003-1.30.8" exclude("com.google.guava", "guava-jdk5"),
+    "com.google.api-client" % "google-api-client" % "1.31.1", // https://app.snyk.io/vuln/SNYK-JAVA-COMGOOGLEOAUTHCLIENT-575276
+    "com.google.guava" % "guava" % "30.0-jre"
   )
 
 }
