@@ -123,24 +123,18 @@ Once you have completed those 3 steps, you should be able to integrate it in you
   - This is how you can build your credentials from the json cert file you have downloaded:
 
 ```scala
-import java.io.FileInputStream
-
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
-import com.gu.googleauth.GoogleServiceAccount
+import org.apache.commons.io.Charsets.UTF_8
+import org.apache.commons.io.IOUtils
+import com.google.auth.oauth2.ServiceAccountCredentials
 
 object GoogleAuthConf {
-  val impersonatedUser = ??? // read from config
-}
-
-private lazy val credentials: GoogleCredential = {
-  val fileInputStream = new FileInputStream("/path/to/your-service-account-cert.json")
-  GoogleCredential.fromStream(fileInputStream)
+  val impersonatedUser: String = ??? // read from config
+  val serviceAccountCert: String = ??? // JSON certificate from Google Developers Console - read from secure storage
 }
 
 private val serviceAccount = GoogleServiceAccount(
-  credentials.getServiceAccountId, // This should contain the *email address* that is associated with your service account
-  credentials.getServiceAccountPrivateKey, // This should contain the *private key* that is associated with your service account
-  GoogleAuthConf.impersonatedUser // This is the admin user email address we mentioned earlier
+  GoogleAuthConf.impersonatedUser, // This is the admin user email address we mentioned earlier
+  ServiceAccountCredentials.fromStream(IOUtils.toInputStream(serviceAccountCert, UTF_8))
 )
 ```
 
