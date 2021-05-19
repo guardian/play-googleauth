@@ -9,32 +9,17 @@ Versions
 --------
 
 ### Supported Play Versions
-#### Scala 2.13
-* Play **2.8** : use [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v28_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v28_2.13)
+
+* Play **2.8** : use [![play-googleauth artifacts](https://index.scala-lang.org/guardian/play-googleauth/play-v28/latest-by-scala-version.svg)](https://index.scala-lang.org/guardian/play-googleauth/play-v28/)
   ```
   libraryDependencies += "com.gu.play-googleauth" %% "play-v28" % "[maven version number]"
   ```
-* Play **2.7** : use [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v27_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v27_2.13)
+* Play **2.7** : use [![play-googleauth artifacts](https://index.scala-lang.org/guardian/play-googleauth/play-v27/latest-by-scala-version.svg)](https://index.scala-lang.org/guardian/play-googleauth/play-v27/)
   ```
   libraryDependencies += "com.gu.play-googleauth" %% "play-v27" % "[maven version number]"
   ```
-  
-#### Scala 2.12
 
-* Play **2.8** : use [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v28_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v28_2.12)
-  ```
-  libraryDependencies += "com.gu.play-googleauth" %% "play-v28" % "[maven version number]"
-  ```
-* Play **2.7** : use [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v27_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v27_2.12)
-  ```
-  libraryDependencies += "com.gu.play-googleauth" %% "play-v27" % "[maven version number]"
-  ```   
-
-We no longer support the below version for Play 2.6, but it can be found here if it is needed:
-* Play **2.6** : use [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v26_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu.play-googleauth/play-v26_2.12)
-  ```
-  libraryDependencies += "com.gu.play-googleauth" %% "play-v26" % "[maven version number]"
-  ```
+We no longer support Play 2.6.
 
 Note that from version **0.7.7** onwards, `play-googleauth` recommends the
 use of the [`play-secret-rotation`](https://github.com/guardian/play-secret-rotation)
