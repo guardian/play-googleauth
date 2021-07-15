@@ -49,7 +49,7 @@ In order to add Google authentication to your Play app you must:
  - use `AuthAction` instead of `Action` to wrap actions in your controllers (these should be made available by
  extending the trait you implemented earlier
 
-See the [example](play-v26/src/sbt-test/example/webapp) application to see how this is done.
+See the [example](play-v27/src/sbt-test/example/webapp) application to see how this is done.
 
 Caveats
 -------
