@@ -1,19 +1,20 @@
 package com.gu.googleauth
 
+import com.gu.play.secretrotation.DualSecretTransition.{InitialSecret, TransitioningSecret}
+import io.jsonwebtoken.SignatureAlgorithm.{HS256, HS384}
+import io.jsonwebtoken.{ExpiredJwtException, SignatureException, UnsupportedJwtException}
+import org.scalatest.TryValues
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import org.threeten.extra.Interval
+import play.api.mvc.RequestHeader
+import play.api.test.FakeRequest
+
 import java.time.Duration.ofSeconds
 import java.time.ZoneOffset.UTC
 import java.time._
 
-import com.gu.play.secretrotation.DualSecretTransition.{InitialSecret, TransitioningSecret}
-import io.jsonwebtoken.{ExpiredJwtException, SignatureException, UnsupportedJwtException}
-import io.jsonwebtoken.SignatureAlgorithm.{HS256, HS384}
-import org.scalatest.{FlatSpec, Matchers, TryValues}
-import org.threeten.extra.Interval
-import play.api.http.SecretConfiguration
-import play.api.mvc.RequestHeader
-import play.api.test.FakeRequest
-
-class AntiForgeryCheckerTest extends FlatSpec with Matchers with TryValues {
+class AntiForgeryCheckerTest extends AnyFlatSpec with Matchers with TryValues {
 
   val ExampleSessionId = AntiForgeryChecker.generateSessionId()
 

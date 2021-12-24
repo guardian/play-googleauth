@@ -1,9 +1,8 @@
 package com.gu.googleauth
 
 import java.security.PrivateKey
-
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
-import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.directory.{Directory, DirectoryScopes}
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.ServiceAccountCredentials
@@ -73,7 +72,7 @@ class GoogleGroupChecker(impersonatedUser: String, serviceAccountCredentials: Se
       .createDelegated(impersonatedUser)
       .createScoped(DirectoryScopes.ADMIN_DIRECTORY_GROUP_READONLY)
     val transport = GoogleNetHttpTransport.newTrustedTransport()
-    val jsonFactory = JacksonFactory.getDefaultInstance
+    val jsonFactory = GsonFactory.getDefaultInstance
     new Directory.Builder(transport, jsonFactory, new HttpCredentialsAdapter(credentials)).build
   }
 

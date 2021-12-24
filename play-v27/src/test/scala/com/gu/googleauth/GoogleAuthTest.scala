@@ -1,7 +1,5 @@
 package com.gu.googleauth
 
-import java.time.{Instant, ZonedDateTime}
-
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.{/, Query}
 import com.gu.googleauth.GoogleAuthTest._
@@ -10,7 +8,9 @@ import com.gu.play.secretrotation.DualSecretTransition.TransitioningSecret
 import com.gu.play.secretrotation.SnapshotProvider
 import mockws.{MockWS, MockWSHelpers}
 import org.apache.commons.codec.binary.Base64
-import org.scalatest.{AsyncFreeSpec, Inspectors, Matchers}
+import org.scalatest.Inspectors
+import org.scalatest.freespec.AsyncFreeSpec
+import org.scalatest.matchers.should.Matchers
 import org.threeten.extra.Interval
 import play.api.libs.json.Json.{prettyPrint, toJson}
 import play.api.libs.json.{Json, Writes}
@@ -19,6 +19,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{AnyContent, RequestHeader}
 import play.api.test.FakeRequest
 
+import java.time.{Instant, ZonedDateTime}
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.{ExecutionContext, Future}
 

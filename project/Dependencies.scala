@@ -11,22 +11,22 @@ object Dependencies {
 
   private def exactPlayVersions(majorMinorVersion: String): String =
     majorMinorVersion match {
-      case "27" => "2.7.3"
-      case "28" => "2.8.1"
+      case "27" => "2.7.9"
+      case "28" => "2.8.11"
     }
 
   private def mockWsVersion(majorMinorVersion: String): String =
     majorMinorVersion match {
       case "27" => "2.7.1"
-      case "28" => "2.8.0"
+      case "28" => "2.8.1"
     }
 
   def playLibs(majorMinorVersion: String): Seq[ModuleID] = {
     val playVersion = exactPlayVersions(majorMinorVersion)
 
-    val play = "com.typesafe.play" %% "play" % playVersion % "provided"
-    val playWS = "com.typesafe.play" %% "play-ws" % playVersion % "provided"
-    val playTest = "com.typesafe.play" %% "play-test" % playVersion % "test"
+    val play = "com.typesafe.play" %% "play" % playVersion % Provided
+    val playWS = "com.typesafe.play" %% "play-ws" % playVersion % Provided
+    val playTest = "com.typesafe.play" %% "play-test" % playVersion % Test
 
     // mockWs depends on some play-ahc-ws classes, so include them for tests
     val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % playVersion % Test
@@ -34,7 +34,7 @@ object Dependencies {
     Seq(play, playWS, playTest, playAhcWs, mockWs)
   }
 
-  val commonsCodec = "commons-codec" % "commons-codec" % "1.14"
+  val commonsCodec = "commons-codec" % "commons-codec" % "1.15"
 
   /** The google-api-services-admin-directory artifact has a transitive dependency on com.google.guava:guava-jdk5 - a
     * nasty artifact that clashes with the regular com.google.guava:guava artifact, providing two versions of the same
@@ -44,9 +44,9 @@ object Dependencies {
     * @see https://github.com/guardian/subscriptions-frontend/pull/363#issuecomment-186190081
     */
   val googleDirectoryAPI = Seq(
-    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20191003-1.30.8" exclude("com.google.guava", "guava-jdk5"),
-    "com.google.api-client" % "google-api-client" % "1.31.1", // https://app.snyk.io/vuln/SNYK-JAVA-COMGOOGLEOAUTHCLIENT-575276
-    "com.google.auth" % "google-auth-library-oauth2-http" % "0.22.0",
+    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20211109-1.32.1" exclude("com.google.guava", "guava-jdk5"),
+    "com.google.api-client" % "google-api-client" % "1.32.2", // https://app.snyk.io/vuln/SNYK-JAVA-COMGOOGLEOAUTHCLIENT-575276
+    "com.google.auth" % "google-auth-library-oauth2-http" % "1.2.2",
     "com.google.guava" % "guava" % "30.0-jre"
   )
 
