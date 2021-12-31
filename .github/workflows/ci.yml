@@ -19,4 +19,4 @@ jobs:
         with:
           java-version: adopt@1.11
       - name: Build and Test
-        run: sbt ++test aws-parameterstore-lambda/assembly
+        run: sbt ++test
