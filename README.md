@@ -1,6 +1,8 @@
 Play Google Auth Module
 =======================
 
+[![CI](https://github.com/guardian/play-googleauth/actions/workflows/ci.yml/badge.svg)](https://github.com/guardian/play-googleauth/actions/workflows/ci.yml)
+
 This module is a very simple implementation of OpenID Connect authentication
 for Play 2 applications.
 It can also be used to get information about the groups of your Google Apps Domain using the Directory API.
