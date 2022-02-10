@@ -31,14 +31,14 @@ val sonatypeReleaseSettings = Seq(
 def projectWithPlayVersion(majorMinorVersion: String) =
   Project(s"play-v$majorMinorVersion", file(s"play-v$majorMinorVersion")).settings(
     scalaVersion       := "2.12.15",
-    crossScalaVersions := Seq(scalaVersion.value, "2.13.7"),
+    crossScalaVersions := Seq(scalaVersion.value, "2.13.8"),
     scalacOptions ++= Seq("-feature", "-deprecation"),
 
     libraryDependencies ++= Seq(
-      "com.gu.play-secret-rotation" %% "core" % "0.31",
+      "com.gu.play-secret-rotation" %% "core" % "0.33",
       "org.typelevel" %% "cats-core" % "2.7.0",
       commonsCodec,
-      "org.scalatest" %% "scalatest" % "3.2.10" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.11" % Test,
       "com.typesafe.akka" %% "akka-http-core" % "10.1.12" % Test
     ) ++ googleDirectoryAPI ++ playLibs(majorMinorVersion),
 

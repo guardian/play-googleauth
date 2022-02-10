@@ -7,7 +7,7 @@ on:
   # see https://docs.github.com/en/free-pro-team@latest/actions/guides/caching-dependencies-to-speed-up-workflows#restrictions-for-accessing-a-cache
   push:
     branches:
-      - master
+      - main
 
 jobs:
   sbt-build:
