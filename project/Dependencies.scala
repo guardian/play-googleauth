@@ -12,7 +12,7 @@ object Dependencies {
   private def exactPlayVersions(majorMinorVersion: String): String =
     majorMinorVersion match {
       case "27" => "2.7.9"
-      case "28" => "2.8.11"
+      case "28" => "2.8.15"
     }
 
   private def mockWsVersion(majorMinorVersion: String): String =
