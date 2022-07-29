@@ -30,13 +30,13 @@ val sonatypeReleaseSettings = Seq(
 
 def projectWithPlayVersion(majorMinorVersion: String) =
   Project(s"play-v$majorMinorVersion", file(s"play-v$majorMinorVersion")).settings(
-    scalaVersion       := "2.12.15",
+    scalaVersion       := "2.12.16",
     crossScalaVersions := Seq(scalaVersion.value, "2.13.8"),
     scalacOptions ++= Seq("-feature", "-deprecation"),
 
     libraryDependencies ++= Seq(
       "com.gu.play-secret-rotation" %% "core" % "0.35",
-      "org.typelevel" %% "cats-core" % "2.7.0",
+      "org.typelevel" %% "cats-core" % "2.8.0",
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.12" % Test,
       "com.typesafe.akka" %% "akka-http-core" % "10.2.9" % Test
