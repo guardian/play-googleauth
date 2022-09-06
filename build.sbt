@@ -39,7 +39,7 @@ def projectWithPlayVersion(majorMinorVersion: String) =
       "org.typelevel" %% "cats-core" % "2.8.0",
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.12" % Test,
-      "com.typesafe.akka" %% "akka-http-core" % "10.2.9" % Test
+      "com.typesafe.akka" %% "akka-http-core" % "10.2.10" % Test
     ) ++ googleDirectoryAPI ++ playLibs(majorMinorVersion),
 
     sonatypeReleaseSettings
