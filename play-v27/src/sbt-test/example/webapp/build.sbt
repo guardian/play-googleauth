@@ -1,6 +1,6 @@
 name := "play-googleauth-example"
 
-scalaVersion := "2.12.16"
+scalaVersion := "2.12.17"
 
 libraryDependencies ++= Seq(
   "com.gu" %% "play-googleauth" % version.value,
