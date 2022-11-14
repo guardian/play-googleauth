@@ -36,7 +36,7 @@ def projectWithPlayVersion(majorMinorVersion: String) =
 
     libraryDependencies ++= Seq(
       "com.gu.play-secret-rotation" %% "core" % "0.35",
-      "org.typelevel" %% "cats-core" % "2.8.0",
+      "org.typelevel" %% "cats-core" % "2.9.0",
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.12" % Test,
       "com.typesafe.akka" %% "akka-http-core" % "10.2.9" % Test
