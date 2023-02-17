@@ -8,7 +8,7 @@ ThisBuild / scmInfo := Some(ScmInfo(
 ))
 
 ThisBuild / pomExtra := (
-  <url>https://github.com/guardian/play-secret-rotation</url>
+  <url>https://github.com/guardian/play-googleauth</url>
     <developers>
       <developer>
         <id>rtyley</id>
