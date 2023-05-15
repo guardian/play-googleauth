@@ -38,7 +38,7 @@ def projectWithPlayVersion(majorMinorVersion: String) =
       "com.gu.play-secret-rotation" %% "core" % "0.37",
       "org.typelevel" %% "cats-core" % "2.9.0",
       commonsCodec,
-      "org.scalatest" %% "scalatest" % "3.2.15" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.16" % Test,
       "com.typesafe.akka" %% "akka-http-core" % "10.2.10" % Test
     ) ++ googleDirectoryAPI ++ playLibs(majorMinorVersion),
 
