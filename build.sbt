@@ -30,8 +30,8 @@ val sonatypeReleaseSettings = Seq(
 
 def projectWithPlayVersion(majorMinorVersion: String) =
   Project(s"play-v$majorMinorVersion", file(s"play-v$majorMinorVersion")).settings(
-    scalaVersion       := "2.12.17",
-    crossScalaVersions := Seq(scalaVersion.value, "2.13.10"),
+    scalaVersion       := "2.12.18",
+    crossScalaVersions := Seq(scalaVersion.value, "2.13.11"),
     scalacOptions ++= Seq("-feature", "-deprecation"),
 
     libraryDependencies ++= Seq(
