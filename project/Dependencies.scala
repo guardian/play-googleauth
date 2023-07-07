@@ -45,7 +45,7 @@ object Dependencies {
     */
   val googleDirectoryAPI = Seq(
     "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20230103-2.0.0",
-    "com.google.api-client" % "google-api-client" % "2.1.2", // https://security.snyk.io/vuln/SNYK-JAVA-COMGOOGLEOAUTHCLIENT-2807808
+    "com.google.api-client" % "google-api-client" % "2.1.4", // https://security.snyk.io/vuln/SNYK-JAVA-COMGOOGLEOAUTHCLIENT-2807808
     "com.google.auth" % "google-auth-library-oauth2-http" % "1.17.0"
   ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "31.1-jre"
 
