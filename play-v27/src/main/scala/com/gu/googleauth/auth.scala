@@ -21,6 +21,7 @@ import play.api.mvc.{RequestHeader, Result}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
+import play.api.libs.ws.WSBodyWritables._
 
 /**
   * The configuration class for Google authentication
