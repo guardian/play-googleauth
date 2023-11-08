@@ -9,29 +9,30 @@ import sbt._
   */
 object Dependencies {
 
-  private def exactPlayVersions(majorMinorVersion: String): String =
-    majorMinorVersion match {
-      case "27" => "2.7.9"
-      case "28" => "2.8.15"
+  case class PlayVersion(
+    majorMinorVersion: String,
+    groupId: String,
+    exactPlayVersion: String,
+    mockWsVersion: String
+  ) {
+    val projectId = s"play-v$majorMinorVersion"
+
+    val playLibs: Seq[ModuleID] = {
+
+      val play = groupId %% "play" % exactPlayVersion % Provided
+      val playWS = groupId %% "play-ws" % exactPlayVersion % Provided
+      val playTest = groupId %% "play-test" % exactPlayVersion % Test
+
+      // mockWs depends on some play-ahc-ws classes, so include them for tests
+      val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % exactPlayVersion % Test
+      val mockWs = "de.leanovate.play-mockws" %% "play-mockws" % mockWsVersion % Test
+      Seq(play, playWS, playTest, playAhcWs, mockWs)
     }
+  }
 
-  private def mockWsVersion(majorMinorVersion: String): String =
-    majorMinorVersion match {
-      case "27" => "2.7.1"
-      case "28" => "2.8.1"
-    }
-
-  def playLibs(majorMinorVersion: String): Seq[ModuleID] = {
-    val playVersion = exactPlayVersions(majorMinorVersion)
-
-    val play = "com.typesafe.play" %% "play" % playVersion % Provided
-    val playWS = "com.typesafe.play" %% "play-ws" % playVersion % Provided
-    val playTest = "com.typesafe.play" %% "play-test" % playVersion % Test
-
-    // mockWs depends on some play-ahc-ws classes, so include them for tests
-    val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % playVersion % Test
-    val mockWs = "de.leanovate.play-mockws" %% "play-mockws" % mockWsVersion(majorMinorVersion) % Test
-    Seq(play, playWS, playTest, playAhcWs, mockWs)
+  object PlayVersion {
+    val V27 = PlayVersion("27", "com.typesafe.play", "2.7.9", "2.7.1")
+    val V28 = PlayVersion("28", "com.typesafe.play", "2.8.20", "2.8.1")
   }
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.16.0"
