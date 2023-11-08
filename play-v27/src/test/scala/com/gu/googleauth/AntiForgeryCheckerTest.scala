@@ -82,8 +82,7 @@ class AntiForgeryCheckerTest extends AnyFlatSpec with Matchers with TryValues {
       .failure.exception shouldBe a [SignatureException]
   }
 
-  def mockRequest(state: String, sessionId: String): RequestHeader = {
+  def mockRequest(state: String, sessionId: String): RequestHeader =
     FakeRequest("GET", path = s"?state=$state").withSession(antiForgery.sessionIdKeyName -> sessionId)
-  }
 
 }

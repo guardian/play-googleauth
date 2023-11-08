@@ -7,7 +7,7 @@ import com.google.api.services.directory.{Directory, DirectoryScopes}
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.ServiceAccountCredentials
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent._
 
 /**
