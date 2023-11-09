@@ -32,7 +32,7 @@ object Dependencies {
 
   object PlayVersion {
     val V27 = PlayVersion("27", "com.typesafe.play", "2.7.9", "2.7.1")
-    val V28 = PlayVersion("28", "com.typesafe.play", "2.8.20", "2.8.1")
+    val V28 = PlayVersion("28", "com.typesafe.play", "2.9.0", "2.8.1")
   }
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.16.0"
