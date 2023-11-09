@@ -3,7 +3,7 @@ import Dependencies._
 
 name := "play-googleauth"
 
-ThisBuild / scalaVersion := "2.13.11"
+ThisBuild / scalaVersion := "2.13.12"
 
 val sonatypeReleaseSettings = Seq(
   organization := "com.gu.play-googleauth",
