@@ -21,7 +21,7 @@ class AppComponents(context: ApplicationLoader.Context)
     clientId = configuration.get[String]("your.clientId.config.path"),
     clientSecret = configuration.get[String]("your.clientSecret.config.path"),
     redirectUrl = configuration.get[String]("your.redirectUrl.config.path"),
-    domain = configuration.get[String]("your.apps-domain.config.path"),
+    domains = List(configuration.get[String]("your.apps-domain.config.path")),
     antiForgeryChecker = AntiForgeryChecker.borrowSettingsFromPlay(httpConfiguration)
   )
 
@@ -31,7 +31,7 @@ class AppComponents(context: ApplicationLoader.Context)
   val googleServiceAccount = GoogleServiceAccount(googleCredential.getServiceAccountId, googleCredential.getServiceAccountPrivateKey, "service.account@mydomain.com")
   val googleGroupChecker = new GoogleGroupChecker(googleServiceAccount)
 
-  val authAction = new AuthAction[AnyContent](googleAuthConfig, routes.Login.loginAction(), controllerComponents.parsers.default)(executionContext)
+  val authAction = new AuthAction[AnyContent](googleAuthConfig, routes.Login.loginAction, controllerComponents.parsers.default)(executionContext)
 
   val login = new Login(requiredGoogleGroups, googleAuthConfig, googleGroupChecker, wsClient, controllerComponents)(executionContext)
   val appController = new Application(authAction, requiredGoogleGroups, googleAuthConfig, googleGroupChecker, controllerComponents)(executionContext)

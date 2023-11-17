@@ -3,3 +3,6 @@ target/
 .idea/
 *.log
 .bsp/
+
+/test-results/
+.DS_Store

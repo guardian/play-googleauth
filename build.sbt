@@ -35,6 +35,8 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
     crossScalaVersions := Seq(scalaVersion.value) ++ (if (playVersion.supportsScala3) Seq("3.3.1") else Seq.empty),
     scalacOptions ++= Seq("-feature", "-deprecation"),
     Compile / unmanagedSourceDirectories += baseDirectory.value / playVersion.pekkoOrAkkaSrcFolder,
+    Test / testOptions +=
+      Tests.Argument(TestFrameworks.ScalaTest, "-u", s"test-results/scala-${scalaVersion.value}", "-o"),
 
     libraryDependencies ++= Seq(
       "com.gu.play-secret-rotation" %% "core" % "0.40",

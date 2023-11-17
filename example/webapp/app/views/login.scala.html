@@ -9,10 +9,10 @@
         @error.map { message =>
             <p>The error was: @message</p>
         }
-        <form action="@routes.Login.loginAction()" method="get">
+        <form action="@routes.Login.loginAction" method="get">
             <input value="Log In" type="submit">
         </form>
-        <p>You can also go to a <a href="@routes.Application.authenticated()">page that requires authentication</a>
-            or <a href="@routes.Login.logout()">logout</a>.</p>
+        <p>You can also go to a <a href="@routes.Application.authenticated">page that requires authentication</a>
+            or <a href="@routes.Login.logout">logout</a>.</p>
     </body>
 </html>
