@@ -32,7 +32,7 @@ object Dependencies {
 
   object PlayVersion {
     val V27 = PlayVersion("27", "com.typesafe.play", "2.7.9", "2.7.1")
-    val V28 = PlayVersion("28", "com.typesafe.play", "2.9.0", "2.8.1")
+    val V28 = PlayVersion("28", "com.typesafe.play", "2.8.20", "2.8.1")
   }
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.16.0"
@@ -45,9 +45,9 @@ object Dependencies {
     * @see https://github.com/guardian/subscriptions-frontend/pull/363#issuecomment-186190081
     */
   val googleDirectoryAPI = Seq(
-    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20231005-2.0.0",
+    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20230516-2.0.0",
     "com.google.api-client" % "google-api-client" % "2.2.0", // https://security.snyk.io/vuln/SNYK-JAVA-COMGOOGLEOAUTHCLIENT-2807808
-    "com.google.auth" % "google-auth-library-oauth2-http" % "1.20.0"
-  ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "32.1.3-jre"
+    "com.google.auth" % "google-auth-library-oauth2-http" % "1.19.0"
+  ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "32.1.1-jre"
 
 }
