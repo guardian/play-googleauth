@@ -14,11 +14,11 @@ Versions
 
 * Play **3.0** : use [![play-googleauth artifacts](https://index.scala-lang.org/guardian/play-googleauth/play-v30/latest-by-scala-version.svg)](https://index.scala-lang.org/guardian/play-googleauth/play-v30/)
   ```
-  libraryDependencies += "com.gu.play-googleauth" %% "play-v28" % "[maven version number]"
+  libraryDependencies += "com.gu.play-googleauth" %% "play-v30" % "[maven version number]"
   ```
 * Play **2.9** : use [![play-googleauth artifacts](https://index.scala-lang.org/guardian/play-googleauth/play-v29/latest-by-scala-version.svg)](https://index.scala-lang.org/guardian/play-googleauth/play-v29/)
   ```
-  libraryDependencies += "com.gu.play-googleauth" %% "play-v27" % "[maven version number]"
+  libraryDependencies += "com.gu.play-googleauth" %% "play-v29" % "[maven version number]"
   ```
 * Play **2.8** : use [![play-googleauth artifacts](https://index.scala-lang.org/guardian/play-googleauth/play-v28/latest-by-scala-version.svg)](https://index.scala-lang.org/guardian/play-googleauth/play-v28/)
   ```
