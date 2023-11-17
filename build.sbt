@@ -40,7 +40,7 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
       "com.gu.play-secret-rotation" %% "core" % "0.40",
       "org.typelevel" %% "cats-core" % "2.9.0",
       commonsCodec,
-      "org.scalatest" %% "scalatest" % "3.2.16" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.17" % Test,
     ) ++ googleDirectoryAPI ++ playVersion.playLibs,
 
     sonatypeReleaseSettings
