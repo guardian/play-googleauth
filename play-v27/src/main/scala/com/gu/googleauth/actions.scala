@@ -224,7 +224,7 @@ trait Filters extends UserIdentifier with Logging {
     */
   def requireGroup[R[_] <: RequestHeader](
     includedGroups: Set[String],
-    notInValidGroup: R[_] => Result = (_: R[_])  => Forbidden
+    notInValidGroup: RequestHeader => Result = _  => Forbidden
   )(implicit ec: ExecutionContext) = new ActionFilter[R] {
 
     override protected def executionContext: ExecutionContext = ec
