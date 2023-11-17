@@ -13,7 +13,8 @@ object Dependencies {
     majorMinorVersion: String,
     groupId: String,
     exactPlayVersion: String,
-    mockWsVersion: String
+    supportsScala3: Boolean = false,
+    usesPekko: Boolean = false
   ) {
     val projectId = s"play-v$majorMinorVersion"
 
@@ -23,16 +24,17 @@ object Dependencies {
       val playWS = groupId %% "play-ws" % exactPlayVersion % Provided
       val playTest = groupId %% "play-test" % exactPlayVersion % Test
 
-      // mockWs depends on some play-ahc-ws classes, so include them for tests
-      val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % exactPlayVersion % Test
-      val mockWs = "de.leanovate.play-mockws" %% "play-mockws" % mockWsVersion % Test
-      Seq(play, playWS, playTest, playAhcWs, mockWs)
+      Seq(play, playWS, playTest)
     }
+
+    val pekkoOrAkkaSrcFolder = s"src-${if (usesPekko) "pekko" else "akka"}"
   }
 
   object PlayVersion {
-    val V27 = PlayVersion("27", "com.typesafe.play", "2.7.9", "2.7.1")
-    val V28 = PlayVersion("28", "com.typesafe.play", "2.8.20", "2.8.1")
+    val V27 = PlayVersion("27", "com.typesafe.play", "2.7.9")
+    val V28 = PlayVersion("28", "com.typesafe.play", "2.8.20")
+    val V29 = PlayVersion("29", "com.typesafe.play", "2.9.0", supportsScala3 = true)
+    val V30 = PlayVersion("30", "org.playframework", "3.0.0", supportsScala3 = true, usesPekko = true)
   }
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.16.0"

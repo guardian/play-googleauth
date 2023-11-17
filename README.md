@@ -12,16 +12,20 @@ Versions
 
 ### Supported Play Versions
 
+* Play **3.0** : use [![play-googleauth artifacts](https://index.scala-lang.org/guardian/play-googleauth/play-v30/latest-by-scala-version.svg)](https://index.scala-lang.org/guardian/play-googleauth/play-v30/)
+  ```
+  libraryDependencies += "com.gu.play-googleauth" %% "play-v30" % "[maven version number]"
+  ```
+* Play **2.9** : use [![play-googleauth artifacts](https://index.scala-lang.org/guardian/play-googleauth/play-v29/latest-by-scala-version.svg)](https://index.scala-lang.org/guardian/play-googleauth/play-v29/)
+  ```
+  libraryDependencies += "com.gu.play-googleauth" %% "play-v29" % "[maven version number]"
+  ```
 * Play **2.8** : use [![play-googleauth artifacts](https://index.scala-lang.org/guardian/play-googleauth/play-v28/latest-by-scala-version.svg)](https://index.scala-lang.org/guardian/play-googleauth/play-v28/)
   ```
   libraryDependencies += "com.gu.play-googleauth" %% "play-v28" % "[maven version number]"
   ```
-* Play **2.7** : use [![play-googleauth artifacts](https://index.scala-lang.org/guardian/play-googleauth/play-v27/latest-by-scala-version.svg)](https://index.scala-lang.org/guardian/play-googleauth/play-v27/)
-  ```
-  libraryDependencies += "com.gu.play-googleauth" %% "play-v27" % "[maven version number]"
-  ```
 
-We no longer support Play 2.6.
+We no longer support Play 2.6 or Scala 2.12, and support for Play 2.7 will be dropped soon.
 
 Note that from version **0.7.7** onwards, `play-googleauth` recommends the
 use of the [`play-secret-rotation`](https://github.com/guardian/play-secret-rotation)
