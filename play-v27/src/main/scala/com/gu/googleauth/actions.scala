@@ -137,7 +137,18 @@ trait LoginSupport extends Logging {
         }
         logWarn(desc, e)
         Future.successful(redirectWithError(failureRedirectTarget, message))
+    }.flatMap { userIdentity =>
+      authConfig.twoFactorAuthChecker.map(requireTwoFactorAuthFor(userIdentity)).getOrElse(EitherT.pure(userIdentity))
     }
+  }
+
+  private def requireTwoFactorAuthFor(userIdentity: UserIdentity)(checker: TwoFactorAuthChecker)(
+    implicit ec: ExecutionContext
+  ): EitherT[Future, Result, UserIdentity] = EitherT {
+    checker.check(userIdentity.email).map(userHas2FA => if (userHas2FA) Right(userIdentity) else {
+      logger.warn(s"failed-oauth-callback : user-does-not-have-2fa")
+      Left(redirectWithError(failureRedirectTarget, "You do not have 2FA enabled"))
+    })
   }
 
   /**
