@@ -34,6 +34,7 @@ import play.api.libs.ws.WSBodyWritables._
  * @param prompt An optional space delimited, case sensitive list of ASCII string values that specifies whether the
  *               Authorization Server prompts the End-User for reauthentication and consent
  * @param antiForgeryChecker configuration for the checks that ensure the OAuth callback can't be forged
+ * @param twoFactorAuthChecker only allow users to authenticate if they have 2FA enabled
   */
 case class GoogleAuthConfig(
   clientId: String,
@@ -43,7 +44,8 @@ case class GoogleAuthConfig(
   maxAuthAge: Option[Duration] = GoogleAuthConfig.defaultMaxAuthAge,
   enforceValidity: Boolean = GoogleAuthConfig.defaultEnforceValidity,
   prompt: Option[String] = GoogleAuthConfig.defaultPrompt,
-  antiForgeryChecker: AntiForgeryChecker
+  antiForgeryChecker: AntiForgeryChecker,
+  twoFactorAuthChecker: Option[TwoFactorAuthChecker] = None
 )
 
 object GoogleAuthConfig {

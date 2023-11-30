@@ -13,7 +13,9 @@ import scala.jdk.CollectionConverters._
  *
  * You can use a Service Account to access the Directory API (in fact, non-Service access, ie web-user,
  * doesn't seem to work?). The Service Account needs the following scope:
- * https://www.googleapis.com/auth/admin.directory.group.readonly
+ * https://www.googleapis.com/auth/admin.directory.group.readonly - note that if you're using
+ * [[TwoFactorAuthChecker]] it requires a different scope:
+ * https://www.googleapis.com/auth/admin.directory.user.readonly
  *
  * So long as you have the Service Account certificate as a string, you can easily make
  * an instance of com.google.auth.oauth2.ServiceAccountCredentials with
