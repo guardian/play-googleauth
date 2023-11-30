@@ -3,7 +3,7 @@ import Dependencies.*
 
 name := "play-googleauth"
 
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "2.13.11"
 
 val sonatypeReleaseSettings = Seq(
   organization := "com.gu.play-googleauth",
@@ -38,9 +38,9 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
 
     libraryDependencies ++= Seq(
       "com.gu.play-secret-rotation" %% "core" % "0.40",
-      "org.typelevel" %% "cats-core" % "2.10.0",
+      "org.typelevel" %% "cats-core" % "2.9.0",
       commonsCodec,
-      "org.scalatest" %% "scalatest" % "3.2.17" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.16" % Test,
     ) ++ googleDirectoryAPI ++ playVersion.playLibs,
 
     sonatypeReleaseSettings
