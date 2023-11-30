@@ -129,16 +129,26 @@ trait LoginSupport extends Logging {
       case expiredJwt: ExpiredJwtException =>
         logWarn("resend-user-with-expired-anti-forgery-token-to-google", expiredJwt)
         startGoogleLogin()
-      case e: IllegalArgumentException =>
-        logWarn("anti-forgery-token-invalid", e)
-        Future.successful(redirectWithError(failureRedirectTarget, "The anti forgery token is not valid"))
-      case e: GoogleAuthException =>
-        logWarn("GoogleAuthException", e)
-        Future.successful(redirectWithError(failureRedirectTarget, e.getMessage))
-      case e: Throwable =>
-        logWarn(e.getClass.getSimpleName, e)
-        Future.successful(redirectWithError(failureRedirectTarget, e.getMessage))
+      case e =>
+        val (desc, message) = e match {
+          case _: IllegalArgumentException => ("anti-forgery-token-invalid", e.getMessage)
+          case _: GoogleAuthException => ("GoogleAuthException", e.getMessage)
+          case _: Throwable => (e.getClass.getSimpleName, e.getMessage)
+        }
+        logWarn(desc, e)
+        Future.successful(redirectWithError(failureRedirectTarget, message))
+    }.flatMap { userIdentity =>
+      authConfig.twoFactorAuthChecker.map(requireTwoFactorAuthFor(userIdentity)).getOrElse(EitherT.pure(userIdentity))
     }
+  }
+
+  private def requireTwoFactorAuthFor(userIdentity: UserIdentity)(checker: TwoFactorAuthChecker)(
+    implicit ec: ExecutionContext
+  ): EitherT[Future, Result, UserIdentity] = EitherT {
+    checker.check(userIdentity.email).map(userHas2FA => if (userHas2FA) Right(userIdentity) else {
+      logger.warn(s"failed-oauth-callback : user-does-not-have-2fa")
+      Left(redirectWithError(failureRedirectTarget, "You do not have 2FA enabled"))
+    })
   }
 
   /**

@@ -24,16 +24,17 @@ import scala.util.{Failure, Success, Try}
 import play.api.libs.ws.WSBodyWritables._
 
 /**
-  * The configuration class for Google authentication
-  * @param clientId The ClientID from the developer dashboard
-  * @param clientSecret The client secret from the developer dashboard
-  * @param redirectUrl The URL to return to after authentication has completed
-  * @param domains An optional list of domains to restrict login to (e.g. guardian.co.uk)
-  * @param maxAuthAge An optional duration after which you want a user to be prompted for their password again
-  * @param enforceValidity A boolean indicating whether you want a user to be re-authenticated when their session expires
-  * @param prompt An optional space delimited, case sensitive list of ASCII string values that specifies whether the
-  *               Authorization Server prompts the End-User for reauthentication and consent
+ * The configuration class for Google authentication
+ * @param clientId The ClientID from the developer dashboard
+ * @param clientSecret The client secret from the developer dashboard
+ * @param redirectUrl The URL to return to after authentication has completed
+ * @param domains An optional list of domains to restrict login to (e.g. guardian.co.uk)
+ * @param maxAuthAge An optional duration after which you want a user to be prompted for their password again
+ * @param enforceValidity A boolean indicating whether you want a user to be re-authenticated when their session expires
+ * @param prompt An optional space delimited, case sensitive list of ASCII string values that specifies whether the
+ *               Authorization Server prompts the End-User for reauthentication and consent
  * @param antiForgeryChecker configuration for the checks that ensure the OAuth callback can't be forged
+ * @param twoFactorAuthChecker only allow users to authenticate if they have 2FA enabled
   */
 case class GoogleAuthConfig(
   clientId: String,
@@ -43,8 +44,10 @@ case class GoogleAuthConfig(
   maxAuthAge: Option[Duration] = GoogleAuthConfig.defaultMaxAuthAge,
   enforceValidity: Boolean = GoogleAuthConfig.defaultEnforceValidity,
   prompt: Option[String] = GoogleAuthConfig.defaultPrompt,
-  antiForgeryChecker: AntiForgeryChecker
+  antiForgeryChecker: AntiForgeryChecker,
+  twoFactorAuthChecker: Option[TwoFactorAuthChecker] = None
 )
+
 object GoogleAuthConfig {
   private val defaultMaxAuthAge: Option[Duration] = None
   private val defaultEnforceValidity: Boolean = true
