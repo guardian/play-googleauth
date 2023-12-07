@@ -1,0 +1,13 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    uses: guardian/gha-scala-library-release-workflow/.github/workflows/reusable-release.yml@main
+    permissions:
+      contents: write
+    secrets:
+      AUTOMATED_MAVEN_RELEASE_PGP_SECRET: ${{ secrets.AUTOMATED_MAVEN_RELEASE_PGP_SECRET }}
+      AUTOMATED_MAVEN_RELEASE_SONATYPE_PASSWORD: ${{ secrets.AUTOMATED_MAVEN_RELEASE_SONATYPE_PASSWORD }}

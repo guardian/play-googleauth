@@ -1,33 +1,22 @@
 import ReleaseTransformations.*
 import Dependencies.*
+import sbtversionpolicy.withsbtrelease.ReleaseVersion.fromAggregatedAssessedCompatibilityWithLatestRelease
+import xerial.sbt.Sonatype.*
 
 name := "play-googleauth"
 
 ThisBuild / scalaVersion := "2.13.12"
 
-val sonatypeReleaseSettings = Seq(
+val artifactPomMetadataSettings = Seq(
   organization := "com.gu.play-googleauth",
 
   description := "Simple Google authentication module for Play 2 & 3",
 
-  licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
+  licenses := Seq("Apache V2" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
 
-  releaseCrossBuild := true, // true if you cross-build the project for multiple Scala versions
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    // For non cross-build projects, use releaseStepCommand("publishSigned")
-    releaseStepCommandAndRemaining("+publishSigned"),
-    releaseStepCommand("sonatypeBundleRelease"),
-    setNextVersion,
-    commitNextVersion,
-    pushChanges
-  )
+  sonatypeProjectHosting :=
+    Some(GitHubHosting("guardian", "play-googleauth", "automated.maven.release.admins@theguardian.com"))
+
 )
 
 def projectWithPlayVersion(playVersion: PlayVersion) =
@@ -44,7 +33,7 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
       "software.amazon.awssdk" % "ssm" % "2.21.35" % Test
     ) ++ googleDirectoryAPI ++ playVersion.playLibs,
 
-    sonatypeReleaseSettings
+    artifactPomMetadataSettings
   )
 
 lazy val `play-v27` = projectWithPlayVersion(PlayVersion.V27)
@@ -58,8 +47,19 @@ lazy val `play-googleauth-root` = (project in file(".")).aggregate(
   `play-v29`,
   `play-v30`
 ).settings(
-  publishArtifact := false,
   publish / skip := true,
 
-  sonatypeReleaseSettings
+  releaseVersion := fromAggregatedAssessedCompatibilityWithLatestRelease().value,
+  releaseCrossBuild := true, // true if you cross-build the project for multiple Scala versions
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    runTest,
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    setNextVersion,
+    commitNextVersion
+  )
 )
