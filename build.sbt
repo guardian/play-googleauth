@@ -8,16 +8,14 @@ ThisBuild / scalaVersion := "2.13.12"
 
 val artifactPomMetadataSettings = Seq(
   organization := "com.gu.play-googleauth",
-
-  description := "Simple Google authentication module for Play 2 & 3",
-
-  licenses := Seq("Apache V2" -> url("https://www.apache.org/licenses/LICENSE-2.0.html"))
+  licenses := Seq("Apache V2" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
+  description := "Simple Google authentication module for Play 2 & 3"
 )
 
 def projectWithPlayVersion(playVersion: PlayVersion) =
   Project(playVersion.projectId, file(playVersion.projectId)).settings(
     crossScalaVersions := Seq(scalaVersion.value) ++ (if (playVersion.supportsScala3) Seq("3.3.1") else Seq.empty),
-    scalacOptions ++= Seq("-feature", "-deprecation"),
+    scalacOptions ++= Seq("-feature", "-deprecation", "-release","11"),
     Compile / unmanagedSourceDirectories += baseDirectory.value / playVersion.pekkoOrAkkaSrcFolder,
 
     libraryDependencies ++= Seq(
