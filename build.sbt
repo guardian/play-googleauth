@@ -1,7 +1,6 @@
 import ReleaseTransformations.*
 import Dependencies.*
 import sbtversionpolicy.withsbtrelease.ReleaseVersion.fromAggregatedAssessedCompatibilityWithLatestRelease
-import xerial.sbt.Sonatype.*
 
 name := "play-googleauth"
 
@@ -12,11 +11,7 @@ val artifactPomMetadataSettings = Seq(
 
   description := "Simple Google authentication module for Play 2 & 3",
 
-  licenses := Seq("Apache V2" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-
-  sonatypeProjectHosting :=
-    Some(GitHubHosting("guardian", "play-googleauth", "automated.maven.release.admins@theguardian.com"))
-
+  licenses := Seq("Apache V2" -> url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 )
 
 def projectWithPlayVersion(playVersion: PlayVersion) =
