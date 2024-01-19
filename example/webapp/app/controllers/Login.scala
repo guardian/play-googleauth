@@ -38,9 +38,9 @@ class Login(requiredGoogleGroups: Set[String], val authConfig: GoogleAuthConfig,
   }
 
   def logout = Action { implicit request =>
-    Redirect(routes.Application.index()).withNewSession
+    Redirect(routes.Application.index).withNewSession
   }
 
-  override val failureRedirectTarget: Call = routes.Login.login()
-  override val defaultRedirectTarget: Call = routes.Application.authenticated()
+  override val failureRedirectTarget: Call = routes.Login.login
+  override val defaultRedirectTarget: Call = routes.Application.authenticated
 }
