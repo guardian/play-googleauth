@@ -22,7 +22,7 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
       "com.gu.play-secret-rotation" %% "core" % "6.0.8",
       "org.typelevel" %% "cats-core" % "2.10.0",
       commonsCodec,
-      "org.scalatest" %% "scalatest" % "3.2.17" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.18" % Test,
       "software.amazon.awssdk" % "ssm" % "2.21.46" % Test
     ) ++ googleDirectoryAPI ++ playVersion.playLibs,
 
