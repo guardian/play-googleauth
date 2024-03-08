@@ -4,7 +4,7 @@ import sbtversionpolicy.withsbtrelease.ReleaseVersion.fromAggregatedAssessedComp
 
 name := "play-googleauth"
 
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "2.13.13"
 
 val artifactPomMetadataSettings = Seq(
   organization := "com.gu.play-googleauth",
@@ -19,10 +19,10 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
     Compile / unmanagedSourceDirectories += baseDirectory.value / playVersion.pekkoOrAkkaSrcFolder,
 
     libraryDependencies ++= Seq(
-      "com.gu.play-secret-rotation" %% "core" % "6.0.5",
+      "com.gu.play-secret-rotation" %% "core" % "6.0.8",
       "org.typelevel" %% "cats-core" % "2.10.0",
       commonsCodec,
-      "org.scalatest" %% "scalatest" % "3.2.17" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.18" % Test,
       "software.amazon.awssdk" % "ssm" % "2.24.12" % Test
     ) ++ googleDirectoryAPI ++ playVersion.playLibs,
 
