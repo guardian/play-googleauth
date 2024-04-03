@@ -31,9 +31,8 @@ object Dependencies {
   }
 
   object PlayVersion {
-    val V27 = PlayVersion("27", "com.typesafe.play", "2.7.9")
-    val V28 = PlayVersion("28", "com.typesafe.play", "2.8.20")
-    val V29 = PlayVersion("29", "com.typesafe.play", "2.9.0", supportsScala3 = true)
+    val V28 = PlayVersion("28", "com.typesafe.play", "2.8.21")
+    val V29 = PlayVersion("29", "com.typesafe.play", "2.9.2", supportsScala3 = true)
     val V30 = PlayVersion("30", "org.playframework", "3.0.2", supportsScala3 = true, usesPekko = true)
   }
 
