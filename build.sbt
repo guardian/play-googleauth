@@ -19,7 +19,7 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
     Compile / unmanagedSourceDirectories += baseDirectory.value / playVersion.pekkoOrAkkaSrcFolder,
 
     libraryDependencies ++= Seq(
-      "com.gu.play-secret-rotation" %% "core" % "8.0.0", // Stay off 8.1.0 or above until https://github.com/guardian/play-secret-rotation/issues/449 is fixed
+      "com.gu.play-secret-rotation" %% "core" % "8.2.0",
       "org.typelevel" %% "cats-core" % "2.10.0",
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.18" % Test,
