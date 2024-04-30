@@ -36,7 +36,7 @@ object Dependencies {
     val V30 = PlayVersion("30", "org.playframework", "3.0.2", supportsScala3 = true, usesPekko = true)
   }
 
-  val commonsCodec = "commons-codec" % "commons-codec" % "1.16.1"
+  val commonsCodec = "commons-codec" % "commons-codec" % "1.17.0"
 
   /** The google-api-services-admin-directory artifact has a transitive dependency on com.google.guava:guava-jdk5 - a
     * nasty artifact that clashes with the regular com.google.guava:guava artifact, providing two versions of the same
@@ -47,7 +47,7 @@ object Dependencies {
     */
   val googleDirectoryAPI = Seq(
     "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20240304-2.0.0",
-    "com.google.api-client" % "google-api-client" % "2.4.0", // https://security.snyk.io/vuln/SNYK-JAVA-COMGOOGLEOAUTHCLIENT-2807808
+    "com.google.api-client" % "google-api-client" % "2.4.1", // https://security.snyk.io/vuln/SNYK-JAVA-COMGOOGLEOAUTHCLIENT-2807808
     "com.google.auth" % "google-auth-library-oauth2-http" % "1.23.0"
   ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.1.0-jre"
 
