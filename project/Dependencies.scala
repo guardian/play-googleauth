@@ -13,7 +13,6 @@ object Dependencies {
     majorMinorVersion: String,
     groupId: String,
     exactPlayVersion: String,
-    supportsScala3: Boolean = false,
     usesPekko: Boolean = false
   ) {
     val projectId = s"play-v$majorMinorVersion"
@@ -31,9 +30,8 @@ object Dependencies {
   }
 
   object PlayVersion {
-    val V28 = PlayVersion("28", "com.typesafe.play", "2.8.21")
-    val V29 = PlayVersion("29", "com.typesafe.play", "2.9.2", supportsScala3 = true)
-    val V30 = PlayVersion("30", "org.playframework", "3.0.2", supportsScala3 = true, usesPekko = true)
+    val V29 = PlayVersion("29", "com.typesafe.play", "2.9.2")
+    val V30 = PlayVersion("30", "org.playframework", "3.0.2", usesPekko = true)
   }
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.17.0"

@@ -14,12 +14,12 @@ val artifactPomMetadataSettings = Seq(
 
 def projectWithPlayVersion(playVersion: PlayVersion) =
   Project(playVersion.projectId, file(playVersion.projectId)).settings(
-    crossScalaVersions := Seq(scalaVersion.value) ++ (if (playVersion.supportsScala3) Seq("3.3.3") else Seq.empty),
+    crossScalaVersions := Seq(scalaVersion.value, "3.3.3"),
     scalacOptions ++= Seq("-feature", "-deprecation", "-release","11"),
     Compile / unmanagedSourceDirectories += baseDirectory.value / playVersion.pekkoOrAkkaSrcFolder,
 
     libraryDependencies ++= Seq(
-      "com.gu.play-secret-rotation" %% "core" % "8.2.1",
+      "com.gu.play-secret-rotation" %% "core" % "8.3.1",
       "org.typelevel" %% "cats-core" % "2.10.0",
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.18" % Test,
@@ -29,12 +29,10 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
     artifactPomMetadataSettings
   )
 
-lazy val `play-v28` = projectWithPlayVersion(PlayVersion.V28)
 lazy val `play-v29` = projectWithPlayVersion(PlayVersion.V29)
 lazy val `play-v30` = projectWithPlayVersion(PlayVersion.V30)
 
 lazy val `play-googleauth-root` = (project in file(".")).aggregate(
-  `play-v28`,
   `play-v29`,
   `play-v30`
 ).settings(
