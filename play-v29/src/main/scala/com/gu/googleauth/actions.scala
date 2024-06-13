@@ -130,10 +130,9 @@ trait LoginSupport extends Logging {
         logWarn("resend-user-with-expired-anti-forgery-token-to-google", expiredJwt)
         startGoogleLogin()
       case e =>
-        val (desc, message) = e match {
-          case _: IllegalArgumentException => ("anti-forgery-token-invalid", e.getMessage)
-          case _: GoogleAuthException => ("GoogleAuthException", e.getMessage)
-          case _: Throwable => (e.getClass.getSimpleName, e.getMessage)
+        val desc = e match {
+          case _: IllegalArgumentException => "anti-forgery-token-invalid"
+          case _: Throwable => e.getClass.getSimpleName
         }
         logWarn(desc, e)
         Future.successful(redirectWithError(failureRedirectTarget, "Internal error, please check the logs for more information"))
