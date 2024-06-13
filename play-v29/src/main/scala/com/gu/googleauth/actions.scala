@@ -136,7 +136,7 @@ trait LoginSupport extends Logging {
           case _: Throwable => (e.getClass.getSimpleName, e.getMessage)
         }
         logWarn(desc, e)
-        Future.successful(redirectWithError(failureRedirectTarget, message))
+        Future.successful(redirectWithError(failureRedirectTarget, "Internal error, please check the logs for more information"))
     }.flatMap { userIdentity =>
       authConfig.twoFactorAuthChecker.map(requireTwoFactorAuthFor(userIdentity)).getOrElse(EitherT.pure(userIdentity))
     }
