@@ -5,6 +5,7 @@ import sbtversionpolicy.withsbtrelease.ReleaseVersion.fromAggregatedAssessedComp
 name := "play-googleauth"
 
 ThisBuild / scalaVersion := "2.13.14"
+ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("releases"), // libraries that haven't yet synced to maven central
 
 val artifactPomMetadataSettings = Seq(
   organization := "com.gu.play-googleauth",
