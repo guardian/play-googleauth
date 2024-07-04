@@ -24,7 +24,7 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
       "org.typelevel" %% "cats-core" % "2.12.0",
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.19" % Test,
-      "software.amazon.awssdk" % "ssm" % "2.25.63" % Test
+      "software.amazon.awssdk" % "ssm" % "2.25.70" % Test
     ) ++ googleDirectoryAPI ++ playVersion.playLibs,
 
     artifactPomMetadataSettings
