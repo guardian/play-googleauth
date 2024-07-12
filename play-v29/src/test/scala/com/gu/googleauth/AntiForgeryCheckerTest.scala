@@ -2,7 +2,8 @@ package com.gu.googleauth
 
 import com.gu.play.secretrotation.DualSecretTransition.{InitialSecret, TransitioningSecret}
 import io.jsonwebtoken.SignatureAlgorithm.{HS256, HS384}
-import io.jsonwebtoken.{ExpiredJwtException, SignatureException, UnsupportedJwtException}
+import io.jsonwebtoken.security.SignatureException
+import io.jsonwebtoken.{ExpiredJwtException, UnsupportedJwtException}
 import org.scalatest.TryValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

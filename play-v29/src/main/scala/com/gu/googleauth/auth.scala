@@ -1,27 +1,29 @@
 package com.gu.googleauth
 
-import java.math.BigInteger
-import java.nio.charset.StandardCharsets.UTF_8
-import java.security.SecureRandom
-import java.time.{Clock, Duration}
-import java.util.{Base64, Date}
 import com.gu.googleauth.AntiForgeryChecker._
 import com.gu.play.secretrotation.DualSecretTransition.InitialSecret
 import com.gu.play.secretrotation.SnapshotProvider
+import io.jsonwebtoken
 import io.jsonwebtoken.SignatureAlgorithm.HS256
 import io.jsonwebtoken._
 import play.api.Logging
 import play.api.http.HeaderNames.USER_AGENT
 import play.api.http.HttpConfiguration
 import play.api.libs.json.JsValue
+import play.api.libs.ws.WSBodyWritables._
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{RequestHeader, Result}
 
+import java.math.BigInteger
+import java.nio.charset.StandardCharsets.UTF_8
+import java.security.SecureRandom
+import java.time.{Clock, Duration}
+import java.util.Date
+import javax.crypto.spec.SecretKeySpec
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
-import play.api.libs.ws.WSBodyWritables._
 
 /**
  * The configuration class for Google authentication
@@ -94,8 +96,13 @@ case class AntiForgeryChecker(
   sessionIdKeyName: String = "play-googleauth-session-id"
 ) extends Logging {
 
-  private def base64EncodedSecretFrom(secret: String): String =
-    Base64.getEncoder.encodeToString(secret.getBytes(UTF_8))
+  /**
+   * This method is used, rather than the jjwt recommendation `Keys.hmacShaKeyFor(str)`, because that method would
+   * introduce new behaviour where the choice of signature algorithm depends on the size of the secret - to maintain
+   * consistency with earlier versions of play-googleauth, we fix the algorithm to the one provided in the
+   * AntiForgeryChecker constructor.
+   */
+  private def keyFor(secret: String) = new SecretKeySpec(secret.getBytes(UTF_8), signatureAlgorithm.getJcaName)
 
   def ensureUserHasSessionId(t: String => Future[Result])(implicit request: RequestHeader, ec: ExecutionContext):Future[Result] = {
     val sessionId = request.session.get(sessionIdKeyName).getOrElse(generateSessionId())
@@ -106,7 +113,7 @@ case class AntiForgeryChecker(
   def generateToken(sessionId: String)(implicit clock: Clock = Clock.systemUTC) : String = Jwts.builder()
     .setExpiration(Date.from(clock.instant().plusSeconds(60)))
     .claim(SessionIdJWTClaimPropertyName, sessionId)
-    .signWith(signatureAlgorithm, base64EncodedSecretFrom(secretsProvider.snapshot().secrets.active))
+    .signWith(keyFor(secretsProvider.snapshot().secrets.active), signatureAlgorithm)
     .compact()
 
   def checkChoiceOfSigningAlgorithm(claims: Jws[Claims]): Try[Unit] =
@@ -130,11 +137,11 @@ case class AntiForgeryChecker(
   } yield ()
 
   private def parseJwtClaimsFrom(oauthAntiForgeryState: String) = secretsProvider.snapshot().decode[Try[Jws[Claims]]]({
-    sc => Try(Jwts.parser().setSigningKey(base64EncodedSecretFrom(sc)).parseClaimsJws(oauthAntiForgeryState))
+    sc => Try(Jwts.parserBuilder().setSigningKey(keyFor(sc)).build().parseClaimsJws(oauthAntiForgeryState))
   }, conclusiveDecode = {
-    case Failure(_: SignatureException) => false // signature doesn't match this secret, try a different one
+    case Failure(_: jsonwebtoken.security.SignatureException) => false // signature doesn't match this secret, try a different one
     case _ => true
-  }).getOrElse(Failure(new SignatureException("OAuth anti-forgery state doesn't have a valid signature")))
+  }).getOrElse(Failure(new jsonwebtoken.security.SignatureException("OAuth anti-forgery state doesn't have a valid signature")))
 }
 
 object AntiForgeryChecker {
