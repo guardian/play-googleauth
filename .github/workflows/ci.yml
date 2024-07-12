@@ -10,13 +10,24 @@ on:
       - main
 
 jobs:
-  sbt-build:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: coursier/cache-action@v6
-      - uses: olafurpg/setup-scala@v11
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup JDK
+        uses: actions/setup-java@v4
         with:
-          java-version: adopt@1.11
+          distribution: corretto
+          java-version: 21
+          cache: sbt
       - name: Build and Test
-        run: sbt ++test
+        run: sbt -v +test publishLocal
+      - name: Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: "test-results/**/TEST-*.xml"
+        if: always()
+      - name: Integration Test
+        working-directory: ./play-v30/src/sbt-test/example/webapp
+        run: sbt -v compile

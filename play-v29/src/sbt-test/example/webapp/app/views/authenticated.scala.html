@@ -18,7 +18,7 @@
             <p><img class="avatar" src="@avatarUrl" alt="@request.user.firstName" /></p>
         }
         <p>The expiry time is @{Instant.ofEpochSecond(request.user.exp)}</p>
-        <p>You can go to the <a href="@routes.Login.login()">login page</a>
-            or <a href="@routes.Login.logout()">logout</a>.</p>
+        <p>You can go to the <a href="@routes.Login.login">login page</a>
+            or <a href="@routes.Login.logout">logout</a>.</p>
     </body>
 </html>

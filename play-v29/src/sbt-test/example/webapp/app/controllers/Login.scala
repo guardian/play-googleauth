@@ -1,6 +1,6 @@
 package controllers
 
-import com.gu.googleauth.{GoogleAuthConfig, GoogleGroupChecker, GoogleServiceAccount, LoginSupport}
+import com.gu.googleauth.{GoogleAuthConfig, GoogleGroupChecker, LoginSupport}
 import play.api.libs.ws.WSClient
 import play.api.mvc._
 
@@ -38,9 +38,9 @@ class Login(requiredGoogleGroups: Set[String], val authConfig: GoogleAuthConfig,
   }
 
   def logout = Action { implicit request =>
-    Redirect(routes.Application.index()).withNewSession
+    Redirect(routes.Application.index).withNewSession
   }
 
-  override val failureRedirectTarget: Call = routes.Login.login()
-  override val defaultRedirectTarget: Call = routes.Application.authenticated()
+  override val failureRedirectTarget: Call = routes.Login.login
+  override val defaultRedirectTarget: Call = routes.Application.authenticated
 }

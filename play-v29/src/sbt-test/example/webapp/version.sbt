@@ -1,1 +1,1 @@
-../../../../version.sbt
+../../../../../version.sbt
