@@ -20,7 +20,7 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
     Compile / unmanagedSourceDirectories += baseDirectory.value / playVersion.pekkoOrAkkaSrcFolder,
 
     libraryDependencies ++= Seq(
-      "com.gu.play-secret-rotation" %% "core" % "9.0.1",
+      "com.gu.play-secret-rotation" %% "core" % "10.1.0",
       "org.typelevel" %% "cats-core" % "2.12.0",
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.19" % Test,
