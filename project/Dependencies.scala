@@ -47,6 +47,6 @@ object Dependencies {
     "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20240618-2.0.0",
     "com.google.api-client" % "google-api-client" % "2.6.0", // https://security.snyk.io/vuln/SNYK-JAVA-COMGOOGLEOAUTHCLIENT-2807808
     "com.google.auth" % "google-auth-library-oauth2-http" % "1.24.1"
-  ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.2.1-jre"
+  ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.3.0-jre"
 
 }
