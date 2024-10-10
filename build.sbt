@@ -15,12 +15,12 @@ val artifactPomMetadataSettings = Seq(
 
 def projectWithPlayVersion(playVersion: PlayVersion) =
   Project(playVersion.projectId, file(playVersion.projectId)).settings(
-    crossScalaVersions := Seq(scalaVersion.value, "3.3.3"),
+    crossScalaVersions := Seq(scalaVersion.value, "3.3.4"),
     scalacOptions ++= Seq("-feature", "-deprecation", "-release","11"),
     Compile / unmanagedSourceDirectories += baseDirectory.value / playVersion.pekkoOrAkkaSrcFolder,
 
     libraryDependencies ++= Seq(
-      "com.gu.play-secret-rotation" %% "core" % "11.1.1",
+      "com.gu.play-secret-rotation" %% "core" % "11.3.0",
       "org.typelevel" %% "cats-core" % "2.12.0",
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.19" % Test,
