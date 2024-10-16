@@ -15,12 +15,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: corretto
-          java-version: 21
-          cache: sbt
+
+      - uses: guardian/setup-scala@v1
+
       - name: Build and Test
         run: sbt -v +test publishLocal
       - name: Test Summary
