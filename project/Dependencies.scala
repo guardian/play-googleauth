@@ -31,7 +31,7 @@ object Dependencies {
 
   object PlayVersion {
     val V29 = PlayVersion("29", "com.typesafe.play", "2.9.2")
-    val V30 = PlayVersion("30", "org.playframework", "3.0.5", usesPekko = true)
+    val V30 = PlayVersion("30", "org.playframework", "3.0.6", usesPekko = true)
   }
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.17.1"
@@ -45,7 +45,7 @@ object Dependencies {
     */
   val googleDirectoryAPI = Seq(
     "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20240924-2.0.0",
-    "com.google.api-client" % "google-api-client" % "2.7.0",
+    "com.google.api-client" % "google-api-client" % "2.7.1",
     "com.google.auth" % "google-auth-library-oauth2-http" % "1.30.0"
   ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.3.1-jre"
 
