@@ -193,7 +193,7 @@ trait LoginSupport extends Logging {
     (implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
     (for {
       identity <- checkIdentity()
-      _ <- enforceGoogleGroups(identity, groupChecker, groupCheckConfig)
+      _ <- enforceGoogleGroups(identity, groupCheckConfig, groupChecker)
     } yield {
       setupSessionWhenSuccessful(identity)
     }).merge
