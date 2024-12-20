@@ -89,6 +89,8 @@ class AuthAction[A](val authConfig: GoogleAuthConfig, loginTarget: Call, bodyPar
 }
 
 trait LoginSupport extends Logging {
+  import Actions.GroupCheckConfig
+
   implicit def wsClient: WSClient
 
   /**
@@ -154,15 +156,15 @@ trait LoginSupport extends Logging {
     * Looks up user's Google Groups and ensures they belong to any that are required. Redirects to
     * `failureRedirectTarget` if the user is not a member of any required group.
     */
-  def enforceGoogleGroups(userIdentity: UserIdentity, requiredGoogleGroups: Set[String], googleGroupChecker: GoogleGroupChecker, errorMessage: String = "Login failure. You do not belong to the required Google groups")
+  def enforceGoogleGroups(userIdentity: UserIdentity, groupChecker: GoogleGroupChecker, groupCheckConfig: GroupCheckConfig, errorMessage: String = "Login failure. You do not belong to the required Google groups")
                          (implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, Unit] = {
-    googleGroupChecker.retrieveGroupsFor(userIdentity.email).attemptT
+    groupChecker.retrieveGroupsFor(userIdentity.email).attemptT
       .leftMap { t =>
         logger.warn("Login failure, Could not look up user's Google groups", t)
         redirectWithError(failureRedirectTarget, "Login failure. Unable to look up Google Group membership")
       }
       .subflatMap { userGroups =>
-        if (Actions.checkGoogleGroups(userGroups, requiredGoogleGroups)) {
+        if (Actions.checkGoogleGroups(userGroups, groupCheckConfig)) {
           Right(())
         } else {
           logger.info("Login failure, user not in required Google groups")
@@ -185,13 +187,12 @@ trait LoginSupport extends Logging {
   /**
     * Handle the OAuth2 callback, which logs the user in and redirects them appropriately.
     *
-    * Also ensures the user belongs to the (provided) required Google Groups.
+    * Also ensures the user belongs to *all* the (provided) required Google Groups, and *at least one of* the allowedGoogleGroups
     */
-  def processOauth2Callback(requiredGoogleGroups: Set[String], groupChecker: GoogleGroupChecker)
-    (implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
+  def processOauth2Callback(groupChecker: GoogleGroupChecker, groupCheckConfig: GroupCheckConfig)(implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
     (for {
       identity <- checkIdentity()
-      _ <- enforceGoogleGroups(identity, requiredGoogleGroups, groupChecker)
+      _ <- enforceGoogleGroups(identity, groupChecker, groupCheckConfig)
     } yield {
       setupSessionWhenSuccessful(identity)
     }).merge
@@ -216,8 +217,29 @@ trait LoginSupport extends Logging {
 }
 
 object Actions {
-  private[googleauth] def checkGoogleGroups(userGroups: Set[String], requiredGroups: Set[String]): Boolean = {
+  /**
+    * @param requiredGroups If defined, user must be a member of *all* groups in requiredGroups
+    * @param allowedGroups  If defined, user must be a member of *at least one of* the groups in allowedGroups
+    */
+  case class GroupCheckConfig(
+    requiredGroups: Option[Set[String]] = None,
+    allowedGroups: Option[Set[String]] = None
+  )
+
+  private[googleauth] def checkGoogleGroups(userGroups: Set[String], groupCheckConfig: GroupCheckConfig): Boolean = {
+    val requiredGroupCheck = groupCheckConfig.requiredGroups.map(required => Actions.checkRequiredGoogleGroups(userGroups, required)).getOrElse(true)
+    val allowedGroupCheck = groupCheckConfig.allowedGroups.map(allowed => Actions.checkAllowedGoogleGroups(userGroups, allowed)).getOrElse(true)
+    requiredGroupCheck && allowedGroupCheck
+  }
+
+  // User must be a member of *all* groups in requiredGroups
+  private def checkRequiredGoogleGroups(userGroups: Set[String], requiredGroups: Set[String]): Boolean = {
     userGroups.intersect(requiredGroups) == requiredGroups
+  }
+
+  // User must be a member of *at least one* of the groups in allowedGroups
+  private def checkAllowedGoogleGroups(userGroups: Set[String], allowedGroups: Set[String]): Boolean = {
+    allowedGroups.intersect(userGroups).nonEmpty
   }
 }
 
