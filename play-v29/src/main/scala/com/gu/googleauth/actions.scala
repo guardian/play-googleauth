@@ -156,7 +156,7 @@ trait LoginSupport extends Logging {
     * Looks up user's Google Groups and ensures they belong to any that are required. Redirects to
     * `failureRedirectTarget` if the user is not a member of any required group.
     */
-  def enforceGoogleGroups(userIdentity: UserIdentity, googleGroupChecker: GoogleGroupChecker, groupCheckConfig: GroupCheckConfig, errorMessage: String = "Login failure. You do not belong to the required Google groups")
+  def enforceGoogleGroups(userIdentity: UserIdentity, groupCheckConfig: GroupCheckConfig, googleGroupChecker: GoogleGroupChecker, errorMessage: String = "Login failure. You do not belong to the required Google groups")
                          (implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, Unit] = {
     googleGroupChecker.retrieveGroupsFor(userIdentity.email).attemptT
       .leftMap { t =>
@@ -187,7 +187,7 @@ trait LoginSupport extends Logging {
   /**
     * Handle the OAuth2 callback, which logs the user in and redirects them appropriately.
     *
-    * Also ensures the user belongs to *all* the (provided) required Google Groups, and *at least one of* the allowedGoogleGroups
+    * Also ensures the user is in the correct Google Groups, as defined by the given GroupCheckConfig
     */
   def processOauth2Callback(groupCheckConfig: GroupCheckConfig, groupChecker: GoogleGroupChecker)
     (implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
