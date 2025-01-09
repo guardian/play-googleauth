@@ -44,6 +44,7 @@ class GoogleGroupChecker(
     .expireAfterWrite(cacheDuration)
     .build(
       new CacheLoader[Email, Set[String]]() {
+        // If the loading function throws then nothing is cached, and calls to cache.get() also throw
         def load(email: Email): Set[String] = {
           val result = directoryService.groups.list.setUserKey(email).execute()
           result.getGroups.asScala.map(_.getEmail).toSet
