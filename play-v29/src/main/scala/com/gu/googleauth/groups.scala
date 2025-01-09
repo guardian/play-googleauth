@@ -45,7 +45,6 @@ class GoogleGroupChecker(
     .build(
       new CacheLoader[Email, Set[String]]() {
         def load(email: Email): Set[String] = {
-          println(s"loading $email")
           val result = directoryService.groups.list.setUserKey(email).execute()
           result.getGroups.asScala.map(_.getEmail).toSet
         }
@@ -53,10 +52,6 @@ class GoogleGroupChecker(
     )
 
   def retrieveGroupsFor(userEmail: String)(implicit ec: ExecutionContext): Future[Set[String]] = Future {
-    val start = System.currentTimeMillis()
-    val result = blocking { cache.get(userEmail) }
-    val end = System.currentTimeMillis()
-    println(s"took ${end - start}")
-    result
+    blocking { cache.get(userEmail) }
   }
 }
