@@ -3,8 +3,10 @@ package com.gu.googleauth
 import com.google.api.services.directory.Directory
 import com.google.api.services.directory.DirectoryScopes.ADMIN_DIRECTORY_GROUP_READONLY
 import com.google.auth.oauth2.{GoogleCredentials, ServiceAccountCredentials}
+import com.google.common.cache.{CacheBuilder, CacheLoader, LoadingCache}
 import com.gu.googleauth.internal.DirectoryService
 
+import java.time.Duration
 import scala.concurrent._
 import scala.jdk.CollectionConverters._
 
@@ -23,15 +25,34 @@ import scala.jdk.CollectionConverters._
  *
  * @param impersonatedUser a separate domain-user account email address (eg 'example@guardian.co.uk'), the email address
  *                         of the user the application will be impersonating when making calls.
+ * @param serviceAccountCredentials Google OAuth2 credentials.
+ * @param cacheDuration how long to cache each user's groups for (defaults to 1 minute).
+ *
  */
-class GoogleGroupChecker(impersonatedUser: String, serviceAccountCredentials: ServiceAccountCredentials) {
+class GoogleGroupChecker(
+  impersonatedUser: String,
+  serviceAccountCredentials: ServiceAccountCredentials,
+  cacheDuration: Duration = Duration.ofMinutes(1)
+) {
 
   private val googleCredentials: GoogleCredentials = serviceAccountCredentials.createDelegated(impersonatedUser)
 
   private val directoryService: Directory = DirectoryService(googleCredentials, ADMIN_DIRECTORY_GROUP_READONLY)
 
-  def retrieveGroupsFor(userEmail: String)(implicit ec: ExecutionContext): Future[Set[String]] = for {
-    resp <- Future { blocking { directoryService.groups.list.setUserKey(userEmail).execute() } }
-  } yield resp.getGroups.asScala.map(_.getEmail).toSet
-  
+  type Email = String
+  private val cache: LoadingCache[Email, Set[String]] = CacheBuilder.newBuilder()
+    .expireAfterWrite(cacheDuration)
+    .build(
+      new CacheLoader[Email, Set[String]]() {
+        // If the loading function throws then nothing is cached, and calls to cache.get() also throw
+        def load(email: Email): Set[String] = {
+          val result = directoryService.groups.list.setUserKey(email).execute()
+          result.getGroups.asScala.map(_.getEmail).toSet
+        }
+      }
+    )
+
+  def retrieveGroupsFor(userEmail: String)(implicit ec: ExecutionContext): Future[Set[String]] = Future {
+    blocking { cache.get(userEmail) }
+  }
 }
