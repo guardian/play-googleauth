@@ -34,7 +34,7 @@ object Dependencies {
     val V30 = PlayVersion("30", "org.playframework", "3.0.6", usesPekko = true)
   }
 
-  val commonsCodec = "commons-codec" % "commons-codec" % "1.17.1"
+  val commonsCodec = "commons-codec" % "commons-codec" % "1.17.2"
 
   /** The google-api-services-admin-directory artifact has a transitive dependency on com.google.guava:guava-jdk5 - a
     * nasty artifact that clashes with the regular com.google.guava:guava artifact, providing two versions of the same
