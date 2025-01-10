@@ -187,6 +187,17 @@ trait LoginSupport extends Logging {
   /**
     * Handle the OAuth2 callback, which logs the user in and redirects them appropriately.
     *
+    * Also ensures the user belongs to the (provided) required Google Groups.
+    */
+  @deprecated("Prefer to pass in a GroupCheckConfig object instead.")
+  def processOauth2Callback(requiredGoogleGroups: Set[String], groupChecker: GoogleGroupChecker)
+    (implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
+    val groupCheckConfig = GroupCheckConfig(requiredGroups = Some(requiredGoogleGroups))
+    processOauth2Callback(groupCheckConfig, groupChecker)
+  }
+  /**
+    * Handle the OAuth2 callback, which logs the user in and redirects them appropriately.
+    *
     * Also ensures the user is in the correct Google Groups, as defined by the given GroupCheckConfig
     */
   def processOauth2Callback(groupCheckConfig: GroupCheckConfig, groupChecker: GoogleGroupChecker)
