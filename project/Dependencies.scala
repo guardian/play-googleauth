@@ -47,6 +47,6 @@ object Dependencies {
     "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20250217-2.0.0",
     "com.google.api-client" % "google-api-client" % "2.7.2",
     "com.google.auth" % "google-auth-library-oauth2-http" % "1.33.1"
-  ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.4.0-jre"
+  ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.4.6-jre"
 
 }
