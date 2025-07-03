@@ -23,7 +23,7 @@ object Dependencies {
       val playWS = groupId %% "play-ws" % exactPlayVersion % Provided
       val playTest = groupId %% "play-test" % exactPlayVersion % Test
 
-      Seq(play, playWS, playTest)
+      Seq(play, playWS, playTest, jackson)
     }
 
     val pekkoOrAkkaSrcFolder = s"src-${if (usesPekko) "pekko" else "akka"}"
@@ -48,5 +48,8 @@ object Dependencies {
     "com.google.api-client" % "google-api-client" % "2.8.0",
     "com.google.auth" % "google-auth-library-oauth2-http" % "1.37.0"
   ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.4.8-jre"
+
+  // Play 2.9 & 3.0 are stuck on Jackson 2.14, which has 'high' vulnerabilities
+  val jackson = "com.fasterxml.jackson.core" % "jackson-core" % "2.19.1"
 
 }
