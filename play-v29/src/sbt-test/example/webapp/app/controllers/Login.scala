@@ -1,6 +1,7 @@
 package controllers
 
 import com.gu.googleauth.{GoogleAuthConfig, GoogleGroupChecker, LoginSupport}
+import com.gu.googleauth.Actions.GroupCheckConfig
 import play.api.libs.ws.WSClient
 import play.api.mvc._
 
@@ -34,7 +35,7 @@ class Login(requiredGoogleGroups: Set[String], val authConfig: GoogleAuthConfig,
    */
   def oauth2Callback = Action.async { implicit request =>
 //     processOauth2Callback()  // without Google group membership checks
-    processOauth2Callback(requiredGoogleGroups, googleGroupChecker)  // with optional Google group checks
+    processOauth2Callback(GroupCheckConfig(requiredGroups = Some(requiredGoogleGroups)), googleGroupChecker)  // with optional Google group checks
   }
 
   def logout = Action { implicit request =>
