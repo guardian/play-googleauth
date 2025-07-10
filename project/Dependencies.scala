@@ -19,8 +19,8 @@ object Dependencies {
 
     val playLibs: Seq[ModuleID] = {
 
-      val play = groupId %% "play" % exactPlayVersion % Provided
-      val playWS = groupId %% "play-ws" % exactPlayVersion % Provided
+      val play = groupId %% "play" % exactPlayVersion
+      val playWS = groupId %% "play-ws" % exactPlayVersion
       val playTest = groupId %% "play-test" % exactPlayVersion % Test
 
       Seq(play, playWS, playTest, jackson)
