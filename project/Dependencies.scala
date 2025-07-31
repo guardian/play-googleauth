@@ -34,7 +34,7 @@ object Dependencies {
     val V30 = PlayVersion("30", "org.playframework", "3.0.8", usesPekko = true)
   }
 
-  val commonsCodec = "commons-codec" % "commons-codec" % "1.18.0"
+  val commonsCodec = "commons-codec" % "commons-codec" % "1.19.0"
 
   /** The google-api-services-admin-directory artifact has a transitive dependency on com.google.guava:guava-jdk5 - a
     * nasty artifact that clashes with the regular com.google.guava:guava artifact, providing two versions of the same
@@ -50,6 +50,6 @@ object Dependencies {
   ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.4.8-jre"
 
   // Play 2.9 & 3.0 are stuck on Jackson 2.14, which has 'high' vulnerabilities
-  val jackson = "com.fasterxml.jackson.core" % "jackson-core" % "2.19.1"
+  val jackson = "com.fasterxml.jackson.core" % "jackson-core" % "2.19.2"
 
 }
