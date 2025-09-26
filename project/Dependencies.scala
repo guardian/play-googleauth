@@ -31,7 +31,7 @@ object Dependencies {
 
   object PlayVersion {
     val V29 = PlayVersion("29", "com.typesafe.play", "2.9.2")
-    val V30 = PlayVersion("30", "org.playframework", "3.0.8", usesPekko = true)
+    val V30 = PlayVersion("30", "org.playframework", "3.0.9", usesPekko = true)
   }
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.19.0"
@@ -44,12 +44,12 @@ object Dependencies {
     * @see https://github.com/guardian/subscriptions-frontend/pull/363#issuecomment-186190081
     */
   val googleDirectoryAPI = Seq(
-    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20250421-2.0.0",
+    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20250804-2.0.0",
     "com.google.api-client" % "google-api-client" % "2.8.1",
-    "com.google.auth" % "google-auth-library-oauth2-http" % "1.38.0"
+    "com.google.auth" % "google-auth-library-oauth2-http" % "1.39.0"
   ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.4.8-jre"
 
   // Play 2.9 & 3.0 are stuck on Jackson 2.14, which has 'high' vulnerabilities
-  val jackson = "com.fasterxml.jackson.core" % "jackson-core" % "2.19.2"
+  val jackson = "com.fasterxml.jackson.core" % "jackson-core" % "2.20.0"
 
 }
