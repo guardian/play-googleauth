@@ -14,7 +14,7 @@ val artifactPomMetadataSettings = Seq(
 
 def projectWithPlayVersion(playVersion: PlayVersion) =
   Project(playVersion.projectId, file(playVersion.projectId)).settings(
-    crossScalaVersions := Seq(scalaVersion.value, "3.3.6"),
+    crossScalaVersions := Seq(scalaVersion.value, "3.3.7"),
     scalacOptions ++= Seq("-feature", "-deprecation", "-release","11"),
     Compile / unmanagedSourceDirectories += baseDirectory.value / playVersion.pekkoOrAkkaSrcFolder,
 
