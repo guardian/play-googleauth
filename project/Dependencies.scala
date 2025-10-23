@@ -46,7 +46,7 @@ object Dependencies {
   val googleDirectoryAPI = Seq(
     "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20250804-2.0.0",
     "com.google.api-client" % "google-api-client" % "2.8.1",
-    "com.google.auth" % "google-auth-library-oauth2-http" % "1.39.1"
+    "com.google.auth" % "google-auth-library-oauth2-http" % "1.40.0"
   ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.5.0-jre"
 
   // Play 2.9 & 3.0 are stuck on Jackson 2.14, which has 'high' vulnerabilities
