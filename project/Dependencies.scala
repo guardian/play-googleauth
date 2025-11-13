@@ -44,7 +44,7 @@ object Dependencies {
     * @see https://github.com/guardian/subscriptions-frontend/pull/363#issuecomment-186190081
     */
   val googleDirectoryAPI = Seq(
-    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20250804-2.0.0",
+    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20251021-2.0.0",
     "com.google.api-client" % "google-api-client" % "2.8.1",
     "com.google.auth" % "google-auth-library-oauth2-http" % "1.40.0"
   ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.5.0-jre"
