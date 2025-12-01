@@ -4,7 +4,7 @@ import sbtversionpolicy.withsbtrelease.ReleaseVersion.fromAggregatedAssessedComp
 
 name := "play-googleauth"
 
-ThisBuild / scalaVersion := "2.13.17"
+ThisBuild / scalaVersion := "2.13.18"
 
 val artifactPomMetadataSettings = Seq(
   organization := "com.gu.play-googleauth",
