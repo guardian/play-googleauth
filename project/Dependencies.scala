@@ -12,8 +12,7 @@ object Dependencies {
   case class PlayVersion(
     majorMinorVersion: String,
     groupId: String,
-    exactPlayVersion: String,
-    usesPekko: Boolean = false
+    exactPlayVersion: String
   ) {
     val projectId = s"play-v$majorMinorVersion"
 
@@ -25,13 +24,10 @@ object Dependencies {
 
       Seq(play, playWS, playTest, jackson)
     }
-
-    val pekkoOrAkkaSrcFolder = s"src-${if (usesPekko) "pekko" else "akka"}"
   }
 
   object PlayVersion {
-    val V29 = PlayVersion("29", "com.typesafe.play", "2.9.2")
-    val V30 = PlayVersion("30", "org.playframework", "3.0.10", usesPekko = true)
+    val V30 = PlayVersion("30", "org.playframework", "3.0.10")
   }
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.20.0"
@@ -49,7 +45,7 @@ object Dependencies {
     "com.google.auth" % "google-auth-library-oauth2-http" % "1.41.0"
   ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.5.0-jre"
 
-  // Play 2.9 & 3.0 are stuck on Jackson 2.14, which has 'high' vulnerabilities
+  // Play 3.0 is stuck on Jackson 2.14, which has 'high' vulnerabilities
   val jackson = "com.fasterxml.jackson.core" % "jackson-core" % "2.20.1"
 
 }

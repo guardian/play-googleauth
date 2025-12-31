@@ -1,6 +1,6 @@
 package com.gu.googleauth
 
-import com.gu.googleauth.internal.AkkaOrPekko
+import org.apache.pekko.stream.Materializer
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{Filter, RequestHeader, Result}
 import play.Environment
@@ -13,7 +13,7 @@ object GoogleAuthFilters {
   val LOGIN_ORIGIN_KEY = "loginOriginUrl"
   class AuthFilterWithExemptions(
       loginUrl: FilterExemption,
-      exemptions: Seq[FilterExemption])(implicit val mat: AkkaOrPekko.Materializer, environment: Environment) extends Filter {
+      exemptions: Seq[FilterExemption])(implicit val mat: Materializer, environment: Environment) extends Filter {
 
     def apply(nextFilter: (RequestHeader) => Future[Result])
              (requestHeader: RequestHeader): Future[Result] = {
