@@ -46,6 +46,6 @@ object Dependencies {
   ).map(_ exclude("com.google.guava", "guava-jdk5")) :+ "com.google.guava" % "guava" % "33.5.0-jre"
 
   // Play 3.0 is stuck on Jackson 2.14, which has 'high' vulnerabilities
-  val jackson = "com.fasterxml.jackson.core" % "jackson-core" % "2.20.1"
+  val jackson = "com.fasterxml.jackson.core" % "jackson-core" % "2.20.2"
 
 }
