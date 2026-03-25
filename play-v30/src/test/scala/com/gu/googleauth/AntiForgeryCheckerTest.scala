@@ -24,7 +24,7 @@ class AntiForgeryCheckerTest extends AnyFlatSpec with Matchers with TryValues {
   val antiForgery = AntiForgeryChecker(InitialSecret(lengthySecret("reallySecret")), HS256)
 
   "Anti Forgery" should "fail if token is signed with other algorithm, even if it has the same secret" in {
-    val badAlgorithmAntiForgery = antiForgery.copy(secureDigestAlgorithm = HS384)
+    val badAlgorithmAntiForgery = antiForgery.copy(macAlgorithm = HS384)
 
       antiForgery.verifyToken(mockRequest(badAlgorithmAntiForgery.generateToken(ExampleSessionId), ExampleSessionId))
         .failure.exception should have message "the anti forgery token is not signed with HS256"

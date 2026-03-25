@@ -6,9 +6,8 @@ import com.gu.play.secretrotation.SnapshotProvider
 import io.jsonwebtoken
 
 import javax.crypto.SecretKey
-//import io.jsonwebtoken.SignatureAlgorithm.HS256
 import io.jsonwebtoken.Jwts.SIG.HS256
-import io.jsonwebtoken.security.SecureDigestAlgorithm
+import io.jsonwebtoken.security.{SecureDigestAlgorithm,MacAlgorithm}
 import io.jsonwebtoken._
 import play.api.Logging
 import play.api.http.HeaderNames.USER_AGENT
@@ -96,7 +95,7 @@ object GoogleAuthConfig {
   */
 case class AntiForgeryChecker(
   secretsProvider: SnapshotProvider,
-  secureDigestAlgorithm: SecureDigestAlgorithm[SecretKey, SecretKey] = HS256, // same default currently used by Play: https://github.com/playframework/playframework/blob/a39b208/framework/src/play/src/main/scala/play/api/http/HttpConfiguration.scala#L336
+  macAlgorithm: MacAlgorithm = HS256, // same default currently used by Play: https://github.com/playframework/playframework/blob/a39b208/framework/src/play/src/main/scala/play/api/http/HttpConfiguration.scala#L336
   sessionIdKeyName: String = "play-googleauth-session-id"
 ) extends Logging {
 
@@ -106,7 +105,19 @@ case class AntiForgeryChecker(
    * consistency with earlier versions of play-googleauth, we fix the algorithm to the one provided in the
    * AntiForgeryChecker constructor.
    */
-  private def keyFor(secret: String) = new SecretKeySpec(secret.getBytes(UTF_8), signatureAlgorithm.getJcaName)
+  private def keyFor(secret: String): SecretKey = {
+    val jcaName = macAlgorithm.getId match {
+      case "HS256" => "HmacSHA256"
+      case "HS384" => "HmacSHA384"
+      case "HS512" => "HmacSHA512"
+      case other =>
+        throw new IllegalArgumentException(
+          s"Unsupported or non-HMAC algorithm for SecretKeySpec: $other"
+        )
+    }
+
+    new SecretKeySpec(secret.getBytes(UTF_8), jcaName)
+  }
 
   def ensureUserHasSessionId(t: String => Future[Result])(implicit request: RequestHeader, ec: ExecutionContext):Future[Result] = {
     val sessionId = request.session.get(sessionIdKeyName).getOrElse(generateSessionId())
@@ -120,13 +131,13 @@ case class AntiForgeryChecker(
     Jwts.builder()
       .expiration(Date.from(clock.instant().plusSeconds(60)))
       .claim(SessionIdJWTClaimPropertyName, sessionId)
-      .signWith(key, secureDigestAlgorithm)
+      .signWith(key, macAlgorithm)
       .compact()
   }
 
   def checkChoiceOfSigningAlgorithm(claims: Jws[Claims]): Try[Unit] =
-    if (claims.getHeader.getAlgorithm == secureDigestAlgorithm.toString) Success(()) else
-      Failure(throw new IllegalArgumentException(s"the anti forgery token is not signed with $secureDigestAlgorithm"))
+    if (claims.getHeader.getAlgorithm == macAlgorithm.toString) Success(()) else
+      Failure(throw new IllegalArgumentException(s"the anti forgery token is not signed with $macAlgorithm"))
 
   def checkTokenContainsCorrectSessionId(claims: Jws[Claims], userSessionId: String): Try[Unit] =
     if (claims.getBody.get(SessionIdJWTClaimPropertyName) == userSessionId) Success(()) else
@@ -167,8 +178,30 @@ object AntiForgeryChecker {
     * If you're happy using the Playframework, you're probably happy to use their choice of JWT
     * signature algorithm.
     */
-  def signatureAlgorithmFromPlay(httpConfiguration: HttpConfiguration): SecureDigestAlgorithm[SecretKey, SecretKey] =
-    Jwts.SIG.get().forKey(httpConfiguration.session.jwt.signatureAlgorithm).asInstanceOf[SecureDigestAlgorithm[SecretKey, SecretKey]]
+  def signatureAlgorithmFromPlay(httpConfiguration: HttpConfiguration): MacAlgorithm =
+    Jwts.SIG.get().forKey(httpConfiguration.session.jwt.signatureAlgorithm).asInstanceOf[MacAlgorithm]
+
+  def apply(
+    secretsProvider: SnapshotProvider,
+    signatureAlgorithm: SignatureAlgorithm, // same default currently used by Play: https://github.com/playframework/playframework/blob/a39b208/framework/src/play/src/main/scala/play/api/http/HttpConfiguration.scala#L336
+    sessionIdKeyName: String
+  ): AntiForgeryChecker = {
+    val secureDigestAlgorithm = signatureAlgorithm match {
+      case SignatureAlgorithm.HS256 => HS256
+      case SignatureAlgorithm.HS384 => Jwts.SIG.HS384
+      case SignatureAlgorithm.HS512 => Jwts.SIG.HS512
+      case other =>
+        throw new IllegalArgumentException(s"Unsupported or non-HMAC signature algorithm: $other")
+    }
+    AntiForgeryChecker(secretsProvider, secureDigestAlgorithm, sessionIdKeyName)
+  }
+
+  def apply(
+    secretsProvider: SnapshotProvider,
+    signatureAlgorithm: SignatureAlgorithm, // same default currently used by Play: https://github.com/playframework/playframework/blob/a39b208/framework/src/play/src/main/scala/play/api/http/HttpConfiguration.scala#L336
+  ): AntiForgeryChecker = {
+    AntiForgeryChecker(secretsProvider, signatureAlgorithm, "play-googleauth-session-id")
+  }
 }
 
 class GoogleAuthException(val message: String, val throwable: Throwable = null) extends Exception(message, throwable)
