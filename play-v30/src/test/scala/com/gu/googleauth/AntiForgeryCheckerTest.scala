@@ -1,9 +1,9 @@
 package com.gu.googleauth
 
 import com.gu.play.secretrotation.DualSecretTransition.{InitialSecret, TransitioningSecret}
-import io.jsonwebtoken.SignatureAlgorithm.{HS256, HS384}
+import io.jsonwebtoken.Jwts.SIG.{HS256, HS384}
 import io.jsonwebtoken.security.SignatureException
-import io.jsonwebtoken.{ExpiredJwtException, UnsupportedJwtException}
+import io.jsonwebtoken.{ExpiredJwtException, Jwts, UnsupportedJwtException}
 import org.scalatest.TryValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -24,7 +24,7 @@ class AntiForgeryCheckerTest extends AnyFlatSpec with Matchers with TryValues {
   val antiForgery = AntiForgeryChecker(InitialSecret(lengthySecret("reallySecret")), HS256)
 
   "Anti Forgery" should "fail if token is signed with other algorithm, even if it has the same secret" in {
-    val badAlgorithmAntiForgery = antiForgery.copy(signatureAlgorithm = HS384)
+    val badAlgorithmAntiForgery = antiForgery.copy(secureDigestAlgorithm = HS384)
 
       antiForgery.verifyToken(mockRequest(badAlgorithmAntiForgery.generateToken(ExampleSessionId), ExampleSessionId))
         .failure.exception should have message "the anti forgery token is not signed with HS256"

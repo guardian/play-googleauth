@@ -4,7 +4,11 @@ import com.gu.googleauth.AntiForgeryChecker._
 import com.gu.play.secretrotation.DualSecretTransition.InitialSecret
 import com.gu.play.secretrotation.SnapshotProvider
 import io.jsonwebtoken
-import io.jsonwebtoken.SignatureAlgorithm.HS256
+
+import javax.crypto.SecretKey
+//import io.jsonwebtoken.SignatureAlgorithm.HS256
+import io.jsonwebtoken.Jwts.SIG.HS256
+import io.jsonwebtoken.security.SecureDigestAlgorithm
 import io.jsonwebtoken._
 import play.api.Logging
 import play.api.http.HeaderNames.USER_AGENT
@@ -92,7 +96,7 @@ object GoogleAuthConfig {
   */
 case class AntiForgeryChecker(
   secretsProvider: SnapshotProvider,
-  signatureAlgorithm: SignatureAlgorithm = HS256, // same default currently used by Play: https://github.com/playframework/playframework/blob/a39b208/framework/src/play/src/main/scala/play/api/http/HttpConfiguration.scala#L336
+  secureDigestAlgorithm: SecureDigestAlgorithm[SecretKey, SecretKey] = HS256, // same default currently used by Play: https://github.com/playframework/playframework/blob/a39b208/framework/src/play/src/main/scala/play/api/http/HttpConfiguration.scala#L336
   sessionIdKeyName: String = "play-googleauth-session-id"
 ) extends Logging {
 
@@ -110,15 +114,19 @@ case class AntiForgeryChecker(
     t(sessionId).map(_.addingToSession(sessionIdKeyName -> sessionId))
   }
 
-  def generateToken(sessionId: String)(implicit clock: Clock = Clock.systemUTC) : String = Jwts.builder()
-    .setExpiration(Date.from(clock.instant().plusSeconds(60)))
-    .claim(SessionIdJWTClaimPropertyName, sessionId)
-    .signWith(keyFor(secretsProvider.snapshot().secrets.active), signatureAlgorithm)
-    .compact()
+  def generateToken(sessionId: String)(implicit clock: Clock = Clock.systemUTC) : String = {
+    val key = keyFor(secretsProvider.snapshot().secrets.active);
+
+    Jwts.builder()
+      .expiration(Date.from(clock.instant().plusSeconds(60)))
+      .claim(SessionIdJWTClaimPropertyName, sessionId)
+      .signWith(key, secureDigestAlgorithm)
+      .compact()
+  }
 
   def checkChoiceOfSigningAlgorithm(claims: Jws[Claims]): Try[Unit] =
-    if (claims.getHeader.getAlgorithm == signatureAlgorithm.getValue) Success(()) else
-      Failure(throw new IllegalArgumentException(s"the anti forgery token is not signed with $signatureAlgorithm"))
+    if (claims.getHeader.getAlgorithm == secureDigestAlgorithm.toString) Success(()) else
+      Failure(throw new IllegalArgumentException(s"the anti forgery token is not signed with $secureDigestAlgorithm"))
 
   def checkTokenContainsCorrectSessionId(claims: Jws[Claims], userSessionId: String): Try[Unit] =
     if (claims.getBody.get(SessionIdJWTClaimPropertyName) == userSessionId) Success(()) else
@@ -137,7 +145,7 @@ case class AntiForgeryChecker(
   } yield ()
 
   private def parseJwtClaimsFrom(oauthAntiForgeryState: String) = secretsProvider.snapshot().decode[Try[Jws[Claims]]]({
-    sc => Try(Jwts.parserBuilder().setSigningKey(keyFor(sc)).build().parseClaimsJws(oauthAntiForgeryState))
+    sc => Try(Jwts.parser().verifyWith(keyFor(sc)).build().parseSignedClaims(oauthAntiForgeryState))
   }, conclusiveDecode = {
     case Failure(_: jsonwebtoken.security.SignatureException) => false // signature doesn't match this secret, try a different one
     case _ => true
@@ -159,8 +167,8 @@ object AntiForgeryChecker {
     * If you're happy using the Playframework, you're probably happy to use their choice of JWT
     * signature algorithm.
     */
-  def signatureAlgorithmFromPlay(httpConfiguration: HttpConfiguration): SignatureAlgorithm =
-    SignatureAlgorithm.forName(httpConfiguration.session.jwt.signatureAlgorithm)
+  def signatureAlgorithmFromPlay(httpConfiguration: HttpConfiguration): SecureDigestAlgorithm[SecretKey, SecretKey] =
+    Jwts.SIG.get().forKey(httpConfiguration.session.jwt.signatureAlgorithm).asInstanceOf[SecureDigestAlgorithm[SecretKey, SecretKey]]
 }
 
 class GoogleAuthException(val message: String, val throwable: Throwable = null) extends Exception(message, throwable)
