@@ -90,7 +90,7 @@ object GoogleAuthConfig {
   * https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-01
   *
   * @param secretsProvider see https://github.com/guardian/play-secret-rotation
-  * @param signatureAlgorithm defaults to a sensible value, but you can consider using
+  * @param macAlgorithm defaults to a sensible value, but you can consider using
   *                           [[AntiForgeryChecker#signatureAlgorithmFromPlay]]
   */
 case class AntiForgeryChecker(
@@ -183,7 +183,7 @@ object AntiForgeryChecker {
 
   def apply(
     secretsProvider: SnapshotProvider,
-    signatureAlgorithm: SignatureAlgorithm, // same default currently used by Play: https://github.com/playframework/playframework/blob/a39b208/framework/src/play/src/main/scala/play/api/http/HttpConfiguration.scala#L336
+    signatureAlgorithm: SignatureAlgorithm,
     sessionIdKeyName: String
   ): AntiForgeryChecker = {
     val secureDigestAlgorithm = signatureAlgorithm match {
@@ -198,7 +198,7 @@ object AntiForgeryChecker {
 
   def apply(
     secretsProvider: SnapshotProvider,
-    signatureAlgorithm: SignatureAlgorithm, // same default currently used by Play: https://github.com/playframework/playframework/blob/a39b208/framework/src/play/src/main/scala/play/api/http/HttpConfiguration.scala#L336
+    signatureAlgorithm: SignatureAlgorithm,
   ): AntiForgeryChecker = {
     AntiForgeryChecker(secretsProvider, signatureAlgorithm, "play-googleauth-session-id")
   }
