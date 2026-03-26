@@ -7,7 +7,7 @@ import io.jsonwebtoken
 
 import javax.crypto.SecretKey
 import io.jsonwebtoken.Jwts.SIG.HS256
-import io.jsonwebtoken.security.{SecureDigestAlgorithm,MacAlgorithm}
+import io.jsonwebtoken.security.MacAlgorithm
 import io.jsonwebtoken._
 import play.api.Logging
 import play.api.http.HeaderNames.USER_AGENT
