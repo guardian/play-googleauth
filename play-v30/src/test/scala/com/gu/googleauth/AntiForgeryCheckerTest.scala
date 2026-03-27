@@ -85,7 +85,16 @@ class AntiForgeryCheckerTest extends AnyFlatSpec with Matchers with TryValues {
       .failure.exception shouldBe a [SignatureException]
   }
 
-  def mockRequest(state: String, sessionId: String): RequestHeader =
-    FakeRequest("GET", path = s"?state=$state").withSession(antiForgery.sessionIdKeyName -> sessionId)
+  it should "accept a SignatureAlgorithm for backwards compatibility" in {
+    val legacyAntiForgery = AntiForgeryChecker(InitialSecret(lengthySecret("reallySecret")), io.jsonwebtoken.SignatureAlgorithm.HS256)
+
+    val validToken = legacyAntiForgery.generateToken(ExampleSessionId)
+
+    legacyAntiForgery.verifyToken(mockRequest(validToken, ExampleSessionId, legacyAntiForgery)).isSuccess shouldBe true
+  }
+
+
+  def mockRequest(state: String, sessionId: String, antiForgeryInstance: AntiForgeryChecker = antiForgery): RequestHeader =
+    FakeRequest("GET", path = s"?state=$state").withSession(antiForgeryInstance.sessionIdKeyName -> sessionId)
 
 }
