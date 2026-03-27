@@ -96,7 +96,7 @@ object GoogleAuthConfig {
 case class AntiForgeryChecker(
   secretsProvider: SnapshotProvider,
   macAlgorithm: MacAlgorithm = HS256, // same default currently used by Play: https://github.com/playframework/playframework/blob/a39b208/framework/src/play/src/main/scala/play/api/http/HttpConfiguration.scala#L336
-  sessionIdKeyName: String = "play-googleauth-session-id"
+  sessionIdKeyName: String = defaultSessionName
 ) extends Logging {
 
   /**
@@ -169,6 +169,8 @@ object AntiForgeryChecker {
 
   val SessionIdJWTClaimPropertyName = "rfp" // see https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-01#section-2
 
+  val defaultSessionName = "play-googleauth-session-id"
+
   @deprecated("You can use this method if you never rotate your Play Application secret, but that's not a good security practice.\n" +
     "Use https://github.com/guardian/play-secret-rotation and the vanilla `AntiForgeryChecker` constructor","0.7.7")
   def borrowSettingsFromPlay(httpConfiguration: HttpConfiguration): AntiForgeryChecker =
@@ -200,7 +202,7 @@ object AntiForgeryChecker {
     secretsProvider: SnapshotProvider,
     signatureAlgorithm: SignatureAlgorithm,
   ): AntiForgeryChecker = {
-    AntiForgeryChecker(secretsProvider, signatureAlgorithm, "play-googleauth-session-id")
+    AntiForgeryChecker(secretsProvider, signatureAlgorithm, defaultSessionName)
   }
 }
 
