@@ -5,7 +5,7 @@ import com.gu.play.secretrotation.DualSecretTransition.InitialSecret
 import com.gu.play.secretrotation.SnapshotProvider
 import io.jsonwebtoken
 import javax.crypto.SecretKey
-import io.jsonwebtoken.Jwts.SIG.HS256
+import io.jsonwebtoken.Jwts.SIG.{HS256, HS384, HS512}
 import io.jsonwebtoken.security.MacAlgorithm
 import io.jsonwebtoken._
 import play.api.Logging
@@ -98,25 +98,15 @@ case class AntiForgeryChecker(
   sessionIdKeyName: String = defaultSessionName
 ) extends Logging {
 
+  private val macAlgorithmJcaName: String = jcaNameFor(macAlgorithm)
+
   /**
    * This method is used, rather than the jjwt recommendation `Keys.hmacShaKeyFor(str)`, because that method would
    * introduce new behaviour where the choice of signature algorithm depends on the size of the secret - to maintain
    * consistency with earlier versions of play-googleauth, we fix the algorithm to the one provided in the
    * AntiForgeryChecker constructor.
    */
-  private def keyFor(secret: String): SecretKey = {
-    val jcaName = macAlgorithm.getId match {
-      case "HS256" => "HmacSHA256"
-      case "HS384" => "HmacSHA384"
-      case "HS512" => "HmacSHA512"
-      case other =>
-        throw new IllegalArgumentException(
-          s"Unsupported or non-HMAC algorithm for SecretKeySpec: $other"
-        )
-    }
-
-    new SecretKeySpec(secret.getBytes(UTF_8), jcaName)
-  }
+  private def keyFor(secret: String): SecretKey = new SecretKeySpec(secret.getBytes(UTF_8), macAlgorithmJcaName)
 
   def ensureUserHasSessionId(t: String => Future[Result])(implicit request: RequestHeader, ec: ExecutionContext):Future[Result] = {
     val sessionId = request.session.get(sessionIdKeyName).getOrElse(generateSessionId())
@@ -124,22 +114,18 @@ case class AntiForgeryChecker(
     t(sessionId).map(_.addingToSession(sessionIdKeyName -> sessionId))
   }
 
-  def generateToken(sessionId: String)(implicit clock: Clock = Clock.systemUTC) : String = {
-    val key = keyFor(secretsProvider.snapshot().secrets.active);
-
-    Jwts.builder()
-      .expiration(Date.from(clock.instant().plusSeconds(60)))
-      .claim(SessionIdJWTClaimPropertyName, sessionId)
-      .signWith(key, macAlgorithm)
-      .compact()
-  }
+  def generateToken(sessionId: String)(implicit clock: Clock = Clock.systemUTC) : String = Jwts.builder()
+    .expiration(Date.from(clock.instant().plusSeconds(60)))
+    .claim(SessionIdJWTClaimPropertyName, sessionId)
+    .signWith(keyFor(secretsProvider.snapshot().secrets.active), macAlgorithm)
+    .compact()
 
   def checkChoiceOfSigningAlgorithm(claims: Jws[Claims]): Try[Unit] =
     if (claims.getHeader.getAlgorithm == macAlgorithm.toString) Success(()) else
       Failure(throw new IllegalArgumentException(s"the anti forgery token is not signed with $macAlgorithm"))
 
   def checkTokenContainsCorrectSessionId(claims: Jws[Claims], userSessionId: String): Try[Unit] =
-    if (claims.getBody.get(SessionIdJWTClaimPropertyName) == userSessionId) Success(()) else
+    if (claims.getPayload.get(SessionIdJWTClaimPropertyName) == userSessionId) Success(()) else
       Failure(throw new IllegalArgumentException("the session ID found in the anti forgery token does not match the Play session ID"))
 
   def verifyToken(request: RequestHeader): Try[Unit] = for {
@@ -170,6 +156,13 @@ object AntiForgeryChecker {
 
   val defaultSessionName = "play-googleauth-session-id"
 
+  def jcaNameFor(macAlgorithm: MacAlgorithm): String = macAlgorithm match {
+    case HS256 => "HmacSHA256"
+    case HS384 => "HmacSHA384"
+    case HS512 => "HmacSHA512"
+    case other => throw new IllegalArgumentException(s"Unsupported or non-HMAC algorithm for SecretKeySpec: $other")
+  }
+
   @deprecated("You can use this method if you never rotate your Play Application secret, but that's not a good security practice.\n" +
     "Use https://github.com/guardian/play-secret-rotation and the vanilla `AntiForgeryChecker` constructor","0.7.7")
   def borrowSettingsFromPlay(httpConfiguration: HttpConfiguration): AntiForgeryChecker =
@@ -180,29 +173,27 @@ object AntiForgeryChecker {
     * signature algorithm.
     */
   def signatureAlgorithmFromPlay(httpConfiguration: HttpConfiguration): MacAlgorithm =
-    Jwts.SIG.get().forKey(httpConfiguration.session.jwt.signatureAlgorithm).asInstanceOf[MacAlgorithm]
+    macAlgorithmFor(httpConfiguration.session.jwt.signatureAlgorithm)
 
+  /**
+   * @param signatureAlgorithm Note that [[SignatureAlgorithm]] has been deprecated by the JJWT project,
+   *                           and you may want to switch to the alternate AntiForgeryChecker constructor that uses
+   *                           [[MacAlgorithm]]
+   */
   def apply(
     secretsProvider: SnapshotProvider,
-    signatureAlgorithm: SignatureAlgorithm,
-    sessionIdKeyName: String
-  ): AntiForgeryChecker = {
-    val secureDigestAlgorithm = signatureAlgorithm match {
-      case SignatureAlgorithm.HS256 => HS256
-      case SignatureAlgorithm.HS384 => Jwts.SIG.HS384
-      case SignatureAlgorithm.HS512 => Jwts.SIG.HS512
-      case other =>
-        throw new IllegalArgumentException(s"Unsupported or non-HMAC signature algorithm: $other")
-    }
-    AntiForgeryChecker(secretsProvider, secureDigestAlgorithm, sessionIdKeyName)
-  }
+    signatureAlgorithm: SignatureAlgorithm
+  ): AntiForgeryChecker = AntiForgeryChecker(
+    secretsProvider,
+    macAlgorithmFor(signatureAlgorithm.getValue),
+    AntiForgeryChecker.defaultSessionName
+  )
 
-  def apply(
-    secretsProvider: SnapshotProvider,
-    signatureAlgorithm: SignatureAlgorithm,
-  ): AntiForgeryChecker = {
-    AntiForgeryChecker(secretsProvider, signatureAlgorithm, defaultSessionName)
-  }
+  /**
+   * @param jwaName JWA (JSON Web Algorithms) name, eg 'HS256', 'HS384', etc
+   */
+  private def macAlgorithmFor(jwaName: String): MacAlgorithm =
+    Jwts.SIG.get().forKey(jwaName).asInstanceOf[MacAlgorithm]
 }
 
 class GoogleAuthException(val message: String, val throwable: Throwable = null) extends Exception(message, throwable)
