@@ -4,7 +4,6 @@ import com.gu.googleauth.AntiForgeryChecker._
 import com.gu.play.secretrotation.DualSecretTransition.InitialSecret
 import com.gu.play.secretrotation.SnapshotProvider
 import io.jsonwebtoken
-
 import javax.crypto.SecretKey
 import io.jsonwebtoken.Jwts.SIG.HS256
 import io.jsonwebtoken.security.MacAlgorithm
