@@ -12,6 +12,8 @@ val artifactPomMetadataSettings = Seq(
   description := "Simple Google authentication module for the Play web framework"
 )
 
+val jjwtVersion = "0.12.7"
+
 def projectWithPlayVersion(playVersion: PlayVersion) =
   Project(playVersion.projectId, file(playVersion.projectId)).settings(
     crossScalaVersions := Seq(scalaVersion.value, "3.3.7"),
@@ -20,9 +22,9 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
     libraryDependencies ++= Seq(
       "com.gu.play-secret-rotation" %% "core" % "17.0.3",
       "org.typelevel" %% "cats-core" % "2.13.0",
-      "io.jsonwebtoken" % "jjwt-api" % "0.12.7",
-      "io.jsonwebtoken" % "jjwt-impl" % "0.12.7",
-      "io.jsonwebtoken" % "jjwt-jackson" % "0.12.7",
+      "io.jsonwebtoken" % "jjwt-api" % jjwtVersion,
+      "io.jsonwebtoken" % "jjwt-impl" % jjwtVersion,
+      "io.jsonwebtoken" % "jjwt-jackson" % jjwtVersion,
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.20" % Test,
       "software.amazon.awssdk" % "ssm" % "2.41.34" % Test
