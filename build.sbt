@@ -12,7 +12,7 @@ val artifactPomMetadataSettings = Seq(
   description := "Simple Google authentication module for the Play web framework"
 )
 
-val jjwtVersion = "0.12.7"
+val jjwtVersion = "0.13.0"
 
 def projectWithPlayVersion(playVersion: PlayVersion) =
   Project(playVersion.projectId, file(playVersion.projectId)).settings(
