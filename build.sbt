@@ -12,7 +12,7 @@ val artifactPomMetadataSettings = Seq(
   description := "Simple Google authentication module for the Play web framework"
 )
 
-val jjwtVersion = "0.12.7"
+val jjwtVersion = "0.13.0"
 
 def projectWithPlayVersion(playVersion: PlayVersion) =
   Project(playVersion.projectId, file(playVersion.projectId)).settings(
@@ -20,14 +20,14 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
     scalacOptions ++= Seq("-feature", "-deprecation", "-release","11"),
 
     libraryDependencies ++= Seq(
-      "com.gu.play-secret-rotation" %% "core" % "17.0.3",
+      "com.gu.play-secret-rotation" %% "core" % "17.0.4",
       "org.typelevel" %% "cats-core" % "2.13.0",
       "io.jsonwebtoken" % "jjwt-api" % jjwtVersion,
       "io.jsonwebtoken" % "jjwt-impl" % jjwtVersion,
       "io.jsonwebtoken" % "jjwt-jackson" % jjwtVersion,
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.20" % Test,
-      "software.amazon.awssdk" % "ssm" % "2.41.34" % Test
+      "software.amazon.awssdk" % "ssm" % "2.42.30" % Test
     ) ++ googleDirectoryAPI ++ playVersion.playLibs,
 
     artifactPomMetadataSettings
