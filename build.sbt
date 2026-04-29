@@ -20,7 +20,7 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
     scalacOptions ++= Seq("-feature", "-deprecation", "-release","11"),
 
     libraryDependencies ++= Seq(
-      "com.gu.play-secret-rotation" %% "core" % "17.0.4",
+      "com.gu.play-secret-rotation" %% "core" % "17.0.5",
       "org.typelevel" %% "cats-core" % "2.13.0",
       "io.jsonwebtoken" % "jjwt-api" % jjwtVersion,
       "io.jsonwebtoken" % "jjwt-impl" % jjwtVersion,
