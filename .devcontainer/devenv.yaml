@@ -1,0 +1,14 @@
+# Devenv project configuration
+# See https://github.com/guardian/devenv.
+#
+# Edit this file to configure your project's devcontainer
+# and then run `devenv generate` to create the devcontainer.json files
+
+name: "play-googleauth"
+
+# Modules: Built-in functionality
+# - mise: Install and configure mise for dev tools management (https://mise.jdx.dev/)
+# - scala: Add IDE plugins and jar caching for Scala development
+modules:
+  - mise
+  - scala

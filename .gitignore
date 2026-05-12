@@ -4,3 +4,12 @@ target/
 *.log
 .bsp/
 .DS_Store
+
+# VSCode
+.vscode/
+
+# Metals config
+.metals/
+.bloop/
+.scala-build/
+metals.sbt
