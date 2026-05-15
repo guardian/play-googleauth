@@ -27,7 +27,7 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
       "io.jsonwebtoken" % "jjwt-jackson" % jjwtVersion,
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.20" % Test,
-      "software.amazon.awssdk" % "ssm" % "2.42.30" % Test
+      "software.amazon.awssdk" % "ssm" % "2.42.41" % Test
     ) ++ googleDirectoryAPI ++ playVersion.playLibs,
 
     artifactPomMetadataSettings
