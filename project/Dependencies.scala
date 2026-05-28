@@ -40,7 +40,7 @@ object Dependencies {
     * @see https://github.com/guardian/subscriptions-frontend/pull/363#issuecomment-186190081
     */
   val googleDirectoryAPI = Seq(
-    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20260227-2.0.0",
+    "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20260421-2.0.0",
     "com.google.api-client" % "google-api-client" % "2.9.0",
     "com.google.auth" % "google-auth-library-oauth2-http" % "1.46.0"
   )
