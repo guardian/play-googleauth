@@ -16,7 +16,7 @@ val jjwtVersion = "0.13.0"
 
 def projectWithPlayVersion(playVersion: PlayVersion) =
   Project(playVersion.projectId, file(playVersion.projectId)).settings(
-    crossScalaVersions := Seq(scalaVersion.value, "3.3.7"),
+    crossScalaVersions := Seq(scalaVersion.value, "3.3.8"),
     scalacOptions ++= Seq("-feature", "-deprecation", "-release","11"),
 
     libraryDependencies ++= Seq(
