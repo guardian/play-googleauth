@@ -42,10 +42,10 @@ object Dependencies {
   val googleDirectoryAPI = Seq(
     "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20260421-2.0.0",
     "com.google.api-client" % "google-api-client" % "2.9.0",
-    "com.google.auth" % "google-auth-library-oauth2-http" % "1.47.0"
+    "com.google.auth" % "google-auth-library-oauth2-http" % "1.48.0"
   )
 
   // Play 3.0 is stuck on Jackson 2.14, which has 'high' vulnerabilities
-  val jackson = "com.fasterxml.jackson.core" % "jackson-core" % "2.21.4"
+  val jackson = "com.fasterxml.jackson.core" % "jackson-core" % "2.22.0"
 
 }
