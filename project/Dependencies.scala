@@ -48,6 +48,6 @@ object Dependencies {
   // Play 3.0 is stuck on Jackson 2.14, which has 'high' vulnerabilities
   val jackson = "com.fasterxml.jackson.core" % "jackson-core" % "2.22.1"
 
-  val jacksonDatabind = "com.fasterxml.jackson.core" % "jackson-databind" % "2.22.0"
+  val jacksonDatabind = "com.fasterxml.jackson.core" % "jackson-databind" % "2.22.1"
 
 }
