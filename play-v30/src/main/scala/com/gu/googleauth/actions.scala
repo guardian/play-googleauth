@@ -154,7 +154,7 @@ trait LoginSupport extends Logging {
     * Looks up user's Google Groups and ensures they belong to any that are required. Redirects to
     * `failureRedirectTarget` if the user is not a member of any required group.
     */
-  def enforceGoogleGroups(userIdentity: UserIdentity, requiredGoogleGroups: Set[String], googleGroupChecker: GoogleGroupChecker, errorMessage: String = "Login failure. You do not belong to the required Google groups")
+  def enforceGoogleGroups(userIdentity: UserIdentity, requiredGoogleGroups: Set[String], googleGroupChecker: GoogleGroupChecker, errorMessage: String = "Login failure. You do not belong to the required Google groups.  See logs for details.")
                          (implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, Unit] = {
     googleGroupChecker.retrieveGroupsFor(userIdentity.email).attemptT
       .leftMap { t =>
@@ -165,7 +165,7 @@ trait LoginSupport extends Logging {
         if (Actions.checkGoogleGroups(userGroups, requiredGoogleGroups)) {
           Right(())
         } else {
-          logger.info("Login failure, user not in required Google groups")
+          logger.warn(s"Login failure, user not in required Google groups.  Required: ${requiredGoogleGroups.mkString(", ")}. User's groups: ${userGroups.mkString(", ")}")
           Left(redirectWithError(failureRedirectTarget, errorMessage))
         }
       }
