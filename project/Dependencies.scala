@@ -41,7 +41,7 @@ object Dependencies {
     */
   val googleDirectoryAPI = Seq(
     "com.google.apis" % "google-api-services-admin-directory" % "directory_v1-rev20260729-2.0.0",
-    "com.google.api-client" % "google-api-client" % "2.9.0",
+    "com.google.api-client" % "google-api-client" % "2.9.1",
     "com.google.auth" % "google-auth-library-oauth2-http" % "1.50.0"
   )
 
