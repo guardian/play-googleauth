@@ -20,14 +20,14 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
     scalacOptions ++= Seq("-feature", "-deprecation", "-release","11"),
 
     libraryDependencies ++= Seq(
-      "com.gu.play-secret-rotation" %% "core" % "20.0.1",
+      "com.gu.play-secret-rotation" %% "core" % "20.0.2",
       "org.typelevel" %% "cats-core" % "2.13.0",
       "io.jsonwebtoken" % "jjwt-api" % jjwtVersion,
       "io.jsonwebtoken" % "jjwt-impl" % jjwtVersion,
       "io.jsonwebtoken" % "jjwt-jackson" % jjwtVersion,
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.20" % Test,
-      "software.amazon.awssdk" % "ssm" % "2.51.2" % Test
+      "software.amazon.awssdk" % "ssm" % "2.51.4" % Test
     ) ++ googleDirectoryAPI ++ playVersion.playLibs,
 
     artifactPomMetadataSettings
