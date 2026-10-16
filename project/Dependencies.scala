@@ -27,7 +27,7 @@ object Dependencies {
   }
 
   object PlayVersion {
-    val V30 = PlayVersion("30", "org.playframework", "3.0.11")
+    val V30 = PlayVersion("30", "org.playframework", "3.0.12")
   }
 
   val commonsCodec = "commons-codec" % "commons-codec" % "1.22.1"
