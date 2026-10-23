@@ -47,8 +47,10 @@ trait UserIdentifier {
   /**
     * Helper method that deals with getting a user identity from a request and establishing validity
     */
-  def userIdentity(request: RequestHeader) =
-    UserIdentity.fromRequest(request).filter(_.isValid || !authConfig.enforceValidity)
+  def userIdentity(request: RequestHeader): Option[UserIdentity] =
+    authConfig.devBypass.map(_.identity).orElse(
+      UserIdentity.fromRequest(request).filter(_.isValid || !authConfig.enforceValidity)
+    )
 }
 
 object AuthAction {
@@ -155,7 +157,8 @@ trait LoginSupport extends Logging {
     * `failureRedirectTarget` if the user is not a member of any required group.
     */
   def enforceGoogleGroups(userIdentity: UserIdentity, requiredGoogleGroups: Set[String], googleGroupChecker: GoogleGroupChecker, errorMessage: String = "Login failure. You do not belong to the required Google groups")
-                         (implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, Unit] = {
+                         (implicit request: RequestHeader, ec: ExecutionContext): EitherT[Future, Result, Unit] =
+    if (authConfig.devBypass.isDefined) EitherT.rightT[Future, Result](()) else {
     googleGroupChecker.retrieveGroupsFor(userIdentity.email).attemptT
       .leftMap { t =>
         logger.warn("Login failure, Could not look up user's Google groups", t)
@@ -239,7 +242,8 @@ trait Filters extends UserIdentifier with Logging {
     override protected def executionContext: ExecutionContext = ec
 
     protected def filter[A](request: R[A]): Future[Option[Result]] =
-      userIdentity(request: RequestHeader).fold[Future[Option[Result]]](Future.successful(Some(notInValidGroup(request)))) {
+      if (authConfig.devBypass.isDefined) Future.successful(None)
+      else userIdentity(request: RequestHeader).fold[Future[Option[Result]]](Future.successful(Some(notInValidGroup(request)))) {
         user => for (usersGroups <- groupChecker.retrieveGroupsFor(user.email)) yield if (includedGroups.intersect(usersGroups).nonEmpty) None else {
           logger.info(s"Excluding ${user.email} from '${request.path}' - not in accepted groups: $includedGroups")
           Some(notInValidGroup(request))

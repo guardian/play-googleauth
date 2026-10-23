@@ -3,7 +3,7 @@ package com.gu.googleauth
 import org.apache.pekko.stream.Materializer
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{Filter, RequestHeader, Result}
-import play.Environment
+import play.api.{Environment, Mode}
 
 import scala.concurrent.Future
 
@@ -13,12 +13,16 @@ object GoogleAuthFilters {
   val LOGIN_ORIGIN_KEY = "loginOriginUrl"
   class AuthFilterWithExemptions(
       loginUrl: FilterExemption,
-      exemptions: Seq[FilterExemption])(implicit val mat: Materializer, environment: Environment) extends Filter {
+      exemptions: Seq[FilterExemption],
+      devBypass: Option[DevAuthBypass] = None)(implicit val mat: Materializer, environment: Environment) extends Filter {
+
+    // Defence in depth: never bypass in Prod, even if a bypass was somehow constructed
+    private val bypassActive = devBypass.isDefined && environment.mode != Mode.Prod
 
     def apply(nextFilter: (RequestHeader) => Future[Result])
              (requestHeader: RequestHeader): Future[Result] = {
 
-      if (environment.isTest || requestHeader.path.startsWith(loginUrl.path) ||
+      if (bypassActive || requestHeader.path.startsWith(loginUrl.path) ||
         exemptions.exists(exemption => requestHeader.path.startsWith(exemption.path)))
         nextFilter(requestHeader)
       else {
