@@ -1,3 +1,4 @@
 java corretto-21.0.3.9.1
 sbt 1
+node 24
 github:guardian/devenv 20260930-111347

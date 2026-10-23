@@ -13,3 +13,8 @@ target/
 .bloop/
 .scala-build/
 metals.sbt
+
+# Playwright e2e tests
+e2e/node_modules/
+e2e/test-results/
+e2e/playwright-report/

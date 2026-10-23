@@ -16,12 +16,16 @@ class AppComponents(context: ApplicationLoader.Context)
   with AhcWSComponents
   with HttpFiltersComponents{
 
+  // Opt-in only: the library refuses to honour this flag in Prod mode
+  val devBypass = DevAuthBypass.forEnvironment(environment, enabled = sys.env.get("GOOGLEAUTH_DEV_BYPASS").contains("true"))
+
   val googleAuthConfig = GoogleAuthConfig(
     clientId = configuration.get[String]("your.clientId.config.path"),
     clientSecret = configuration.get[String]("your.clientSecret.config.path"),
     redirectUrl = configuration.get[String]("your.redirectUrl.config.path"),
     domains = List(configuration.get[String]("your.apps-domain.config.path")),
-    antiForgeryChecker = AntiForgeryChecker.borrowSettingsFromPlay(httpConfiguration)
+    antiForgeryChecker = AntiForgeryChecker.borrowSettingsFromPlay(httpConfiguration),
+    devBypass = devBypass
   )
 
   val requiredGoogleGroups = configuration.underlying.getStringList("your.requiredGoogleGroups").asScala.toSet

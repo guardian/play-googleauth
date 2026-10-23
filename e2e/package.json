@@ -1,0 +1,16 @@
+{
+  "name": "play-googleauth-example-e2e",
+  "version": "1.0.0",
+  "description": "End-to-end tests for the play-googleauth example app, run in Test mode",
+  "private": true,
+  "scripts": {
+    "stage": "cd ../play-v30/src/sbt-test/example/webapp && sbt stage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
+  }
+}

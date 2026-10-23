@@ -28,3 +28,24 @@ jobs:
       - name: Integration Test
         working-directory: ./play-v30/src/sbt-test/example/webapp
         run: sbt -v compile
+
+      - name: Stage example app
+        working-directory: ./play-v30/src/sbt-test/example/webapp
+        run: sbt -v stage
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .tool-versions
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - name: Install e2e dependencies
+        working-directory: ./e2e
+        run: npm ci && npx playwright install --with-deps chromium
+      - name: End-to-end Test
+        working-directory: ./e2e
+        run: npm run test:e2e
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
