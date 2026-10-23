@@ -1,4 +1,4 @@
-import play.api.{Application, ApplicationLoader, LoggerConfigurator}
+import play.api.{Application, ApplicationLoader, LoggerConfigurator, Mode}
 
 class AppLoader extends ApplicationLoader{
   override def load(context: ApplicationLoader.Context): Application = {
@@ -6,7 +6,13 @@ class AppLoader extends ApplicationLoader{
       _.configure(context.environment)
     }
 
-    val components = new AppComponents(context)
+    // `sbt run` always starts in Dev mode, so allow Test mode to be requested via config
+    val effectiveContext =
+      if (context.initialConfiguration.get[Boolean]("your.testMode"))
+        context.copy(environment = context.environment.copy(mode = Mode.Test))
+      else context
+
+    val components = new AppComponents(effectiveContext)
 
     components.application
   }
