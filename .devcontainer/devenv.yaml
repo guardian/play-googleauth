@@ -12,3 +12,8 @@ name: "play-googleauth"
 modules:
   - mise
   - scala
+  - github-copilot
+  - agentsy
+
+forwardPorts:
+  - 9000 # Example app
