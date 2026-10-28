@@ -130,3 +130,19 @@ import com.gu.googleauth.GoogleGroupChecker
 val checker = new GoogleGroupChecker(serviceAccount)
 checker.retrieveGroupsFor(email)
 ```
+
+## Bypassing auth in development and CI
+
+Use `DevAuthBypass` to treat every request as signed in as a fake user (`dev-user@example.invalid`), and to skip
+Google Group checks, without contacting Google. It's opt-in and guarded:
+
+```scala
+val devBypass = DevAuthBypass.forEnvironment(environment, enabled = sys.env.get("GOOGLEAUTH_DEV_BYPASS").contains("true"))
+val config = GoogleAuthConfig(..., devBypass = devBypass)
+```
+
+- a bypass is only created when the Play mode is `Dev` or `Test` **and** the flag is `true`
+- if the flag is `true` in `Prod` mode, `forEnvironment` throws, so a misconfigured deploy fails at startup
+
+> [!IMPORTANT]
+> Never set the flag in production configuration!
