@@ -1,0 +1,113 @@
+name: Recover Maven release 46.1.0
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recover-maven-46.1.0
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Exact commit referenced by the existing v46.1.0 tag.
+          ref: 2ebebf0785369434d0081bb15a0c50116b1dd248
+          persist-credentials: false
+
+      - uses: actions/setup-java@v6
+        with:
+          java-version-file: ".tool-versions"
+
+      - uses: sbt/setup-sbt@ecad189dd245444b9ae0a0cd5922fd938b88906f # v1.5.12 same as release workflow
+
+      - name: Verify release version
+        shell: bash
+        run: |
+          grep -Fx 'ThisBuild / version := "46.1.0"' version.sbt
+
+      - name: Configure native sbt publishing
+        shell: bash
+        run: |
+          # Add publishing configuration only to this checkout of the release commit.
+          cat > project/recovery-pgp.sbt <<'EOF'
+          addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.3.1")
+          EOF
+          cat > recovery-publish.sbt <<'EOF'
+          ThisBuild / homepage := Some(url("https://github.com/guardian/play-googleauth"))
+          ThisBuild / scmInfo := Some(ScmInfo(url("https://github.com/guardian/play-googleauth"), "scm:git:https://github.com/guardian/play-googleauth.git"))
+          ThisBuild / developers := List(Developer("guardian", "The Guardian", "automated.maven.release.admins@theguardian.com", url("https://github.com/guardian")))
+          ThisBuild / publishTo := localStaging.value
+          EOF
+
+      - name: Test both Scala variants
+        shell: bash
+        run: sbt '+test'
+
+      - name: Sign and stage both Scala variants
+        shell: bash
+        env:
+          PGP_PRIVATE_KEY: ${{ secrets.AUTOMATED_MAVEN_RELEASE_PGP_SECRET }}
+        run: |
+          # Env var GPG uses to read its keyring and config 
+          export GNUPGHOME="$(mktemp -d)"
+          chmod 700 "$GNUPGHOME"
+
+          # Stop signing agent when step ends
+          trap 'gpgconf --kill gpg-agent' EXIT
+
+          # Import private key
+          printf '%s' "$PGP_PRIVATE_KEY" | gpg --batch --import
+
+          # Find first key fingerprint
+          fingerprint="$(
+            gpg --batch --with-colons --list-secret-keys |
+              awk -F: '$1 == "fpr" { print $10; exit }'
+          )"
+          test -n "$fingerprint"
+
+          sbt \
+            "set Global / pgpSigningKey := Some(\"$fingerprint\")" \
+            '+publishSigned'
+
+      - name: Verify staged artifacts
+        shell: bash
+        run: |
+          for scala in 2.13 3; do
+            base="target/sona-staging/com/gu/play-googleauth/play-v30_$scala/46.1.0"
+            for suffix in .jar .pom -sources.jar -javadoc.jar; do
+              artifact="$base/play-v30_$scala-46.1.0$suffix"
+              test -s "$artifact"
+              test -s "$artifact.asc"
+            done
+          done
+
+      - name: Publish to Maven Central
+        shell: bash
+        env:
+          SONATYPE_TOKEN: ${{ secrets.AUTOMATED_MAVEN_RELEASE_SONATYPE_TOKEN }}
+        run: |
+          if [[ "$SONATYPE_TOKEN" != *:* ]]; then
+            echo "::error::Expected a colon-separated Sonatype username and password."
+            exit 1
+          fi
+          export SONATYPE_USERNAME="${SONATYPE_TOKEN%%:*}"
+          export SONATYPE_PASSWORD="${SONATYPE_TOKEN#*:}"
+          if [[ -z "$SONATYPE_USERNAME" || -z "$SONATYPE_PASSWORD" ]]; then
+            echo "::error::Sonatype username and password must both be non-empty."
+            exit 1
+          fi
+          
+          # Redact from logs
+          echo "::add-mask::$SONATYPE_USERNAME"
+          echo "::add-mask::$SONATYPE_PASSWORD"
+
+          # sonaRelease uploads the bundle and waits for publication.
+          sbt 'sonaRelease'
