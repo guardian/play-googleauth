@@ -40,8 +40,7 @@ lazy val `play-googleauth-root` = (project in file(".")).aggregate(
 ).settings(
   publish / skip := true,
 
-  // TODO: re-enable when there's been a successful release
-  //releaseVersion := fromAggregatedAssessedCompatibilityWithLatestRelease().value,
+  releaseVersion := fromAggregatedAssessedCompatibilityWithLatestRelease().value,
   releaseCrossBuild := true, // true if you cross-build the project for multiple Scala versions
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
