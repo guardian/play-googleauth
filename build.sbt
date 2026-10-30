@@ -27,7 +27,7 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
       "io.jsonwebtoken" % "jjwt-jackson" % jjwtVersion,
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.20" % Test,
-      "software.amazon.awssdk" % "ssm" % "2.51.4" % Test
+      "software.amazon.awssdk" % "ssm" % "2.57.1" % Test
     ) ++ googleDirectoryAPI ++ playVersion.playLibs,
 
     artifactPomMetadataSettings
@@ -40,7 +40,8 @@ lazy val `play-googleauth-root` = (project in file(".")).aggregate(
 ).settings(
   publish / skip := true,
 
-  releaseVersion := fromAggregatedAssessedCompatibilityWithLatestRelease().value,
+  // TODO: re-enable when there's been a successful release
+  //releaseVersion := fromAggregatedAssessedCompatibilityWithLatestRelease().value,
   releaseCrossBuild := true, // true if you cross-build the project for multiple Scala versions
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
