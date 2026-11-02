@@ -11,6 +11,11 @@ case class FilterExemption(path: String)
 
 object GoogleAuthFilters {
   val LOGIN_ORIGIN_KEY = "loginOriginUrl"
+
+  /**
+   * @deprecated Replaced by [[DevAuthBypass]].
+   */
+  @deprecated("Use DevAuthBypass instead")
   class AuthFilterWithExemptions(
       loginUrl: FilterExemption,
       exemptions: Seq[FilterExemption])(implicit val mat: Materializer, environment: Environment) extends Filter {
