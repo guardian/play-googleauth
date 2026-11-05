@@ -38,7 +38,7 @@ object DevAuthBypass extends Logging {
         )
         logger.warn(
           "WARNING: PLAY-GOOGLEAUTH DEV BYPASS IS ACTIVE. Every request is treated as authenticated " +
-            "and Google Group checks are skipped. NEVER enable this on a production application."
+            "and Google Group checks are skipped. NEVER enable this in a production application."
         )
         Some(new DevAuthBypass(identity))
       case _ => None
