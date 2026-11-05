@@ -131,10 +131,11 @@ val checker = new GoogleGroupChecker(serviceAccount)
 checker.retrieveGroupsFor(email)
 ```
 
-## Bypassing auth in development and CI
+## Bypassing auth in dev and CI
 
-Use `DevAuthBypass` to treat every request as signed in as a fake user (`dev-user@example.invalid`), and to skip
-Google Group checks, without contacting Google. It's opt-in and guarded:
+Sometimes it's useful to bypass auth, for example when doing end-to-end automated testing
+locally or in a CI workflow.  Use `DevAuthBypass` to treat every request as signed in as a test user
+and to skip Google Group checks. It's opt-in and guarded:
 
 ```scala
 val devBypass = DevAuthBypass.forEnvironment(environment, enabled = sys.env.get("GOOGLEAUTH_DEV_BYPASS").contains("true"))
