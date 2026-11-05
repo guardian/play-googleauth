@@ -143,6 +143,8 @@ val config = GoogleAuthConfig(..., devBypass = devBypass)
 
 - a bypass is only created when the Play mode is `Dev` or `Test` **and** the flag is `true`
 - if the flag is `true` in `Prod` mode, `forEnvironment` throws, so a misconfigured deploy fails at startup
+- custom identities must have an email address under `.invalid` (for example, `tester@example.invalid`);
+  other domains and malformed addresses are rejected when the bypass is enabled
 
 > [!IMPORTANT]
 > Never set the flag in production configuration!
