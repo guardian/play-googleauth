@@ -25,6 +25,7 @@ def projectWithPlayVersion(playVersion: PlayVersion) =
       "io.jsonwebtoken" % "jjwt-api" % jjwtVersion,
       "io.jsonwebtoken" % "jjwt-impl" % jjwtVersion,
       "io.jsonwebtoken" % "jjwt-jackson" % jjwtVersion,
+      "com.google.guava" % "guava" % "33.7.2-jre", // CVE-2026-102554: uncontrolled memory allocation during deserialisation.
       commonsCodec,
       "org.scalatest" %% "scalatest" % "3.2.20" % Test,
       "software.amazon.awssdk" % "ssm" % "2.57.1" % Test
