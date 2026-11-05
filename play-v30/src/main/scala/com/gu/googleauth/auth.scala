@@ -39,6 +39,7 @@ import scala.util.{Failure, Success, Try}
  *               Authorization Server prompts the End-User for reauthentication and consent
  * @param antiForgeryChecker configuration for the checks that ensure the OAuth callback can't be forged
  * @param twoFactorAuthChecker only allow users to authenticate if they have 2FA enabled
+ * @param devBypass only for dev and CI: treats every request as authenticated, see [[DevAuthBypass]]
   */
 case class GoogleAuthConfig(
   clientId: String,
@@ -49,7 +50,8 @@ case class GoogleAuthConfig(
   enforceValidity: Boolean = GoogleAuthConfig.defaultEnforceValidity,
   prompt: Option[String] = GoogleAuthConfig.defaultPrompt,
   antiForgeryChecker: AntiForgeryChecker,
-  twoFactorAuthChecker: Option[TwoFactorAuthChecker] = None
+  twoFactorAuthChecker: Option[TwoFactorAuthChecker] = None,
+  devBypass: Option[DevAuthBypass] = None
 )
 
 object GoogleAuthConfig {
